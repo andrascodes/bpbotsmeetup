@@ -9,7 +9,7 @@ const app = express();
 const BootBot = require('../bootbot/lib/BootBot.js');
 
 const pmongo = require('promised-mongo');
-const db = pmongo(config.dbaddress, ['users', 'meetups', 'feedbacks', 'articles']);
+const db = pmongo(config.dbaddress,{ authMechanism: 'ScramSHA1' }, ['users', 'meetups', 'feedbacks', 'articles']);
 
 const bot = new BootBot({
   accessToken: config.fbPageAccessToken,
