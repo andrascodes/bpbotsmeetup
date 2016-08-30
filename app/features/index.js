@@ -67,7 +67,6 @@ module.exports = function getCompletedMessage(messageText, chat) {
         let completeMessage = messageText;
         //console.log(results);
         let meetupResults = results[0];
-        console.log(`Options, meetup: ${JSON.stringify(meetupResults, null, 2)}`);
         let fbResults = results[1];
 
         substitutesArray.forEach(function(substitute){
@@ -78,17 +77,25 @@ module.exports = function getCompletedMessage(messageText, chat) {
                         new Date(meetupResults.time).toLocaleString('en-US', { month: 'long', day: 'numeric' }));
                     }
                     else if(substitute.capture.includes('meetup.month')) {
+                        console.log(substitute.capture);
+                        console.log(substitute.capture.split('.'));
+                        console.log(substitute.capture.split('.').slice(2));
                         const options = substitute.capture.split('.').slice(2);
+                        console.log(`Options: ${typeof options}`);
                         console.log(`Options: ${options}`);
-                        if(options.includes('long')) {
+                        if(options === ('long')) {
                             completeMessage = completeMessage.replace(substitute.match, 
                             new Date(meetupResults.time).toLocaleString('en-US', { month: 'long' }));
                         }
                     }
                     else if(substitute.capture.includes('meetup.day')) {
+                        console.log(substitute.capture);
+                        console.log(substitute.capture.split('.'));
+                        console.log(substitute.capture.split('.').slice(2));
                         const options = substitute.capture.split('.').slice(2);
+                        console.log(`Options: ${typeof options}`);
                         console.log(`Options: ${options}`);
-                        if(options.includes('num')) {
+                        if(options === ('num')) {
                             completeMessage = completeMessage.replace(substitute.match, 
                             new Date(meetupResults.time).toLocaleString('en-US', { day: 'numeric' }));
                         }
@@ -112,12 +119,16 @@ module.exports = function getCompletedMessage(messageText, chat) {
                         completeMessage = completeMessage.replace(substitute.match, meetupResults.venue.name);
                     }
                     else if(substitute.capture.includes('meetup.location')) {
+                        console.log(substitute.capture);
+                        console.log(substitute.capture.split('.'));
+                        console.log(substitute.capture.split('.').slice(2));
                         const options = substitute.capture.split('.').slice(2);
+                        console.log(`Options: ${typeof options}`);
                         console.log(`Options: ${options}`);
-                        if(options.includes('address')) {
+                        if(options === ('address')) {
                             completeMessage = completeMessage.replace(substitute.match, meetupResults.venue['address_1']);
                         }
-                        else if(options.includes('city')) {
+                        else if(options === ('city')) {
                             completeMessage = completeMessage.replace(substitute.match, meetupResults.venue.city);
                         }
                     }
