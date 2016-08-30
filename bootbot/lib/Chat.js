@@ -11,6 +11,10 @@ class Chat extends EventEmitter {
     this.userId = userId;
   }
 
+  getDB() {
+    return this.bot.db;
+  }
+
   say(message, options) {
     return this.bot.say(this.userId, message, options);
   }

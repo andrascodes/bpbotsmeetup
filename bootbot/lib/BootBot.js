@@ -8,6 +8,8 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const normalizeString = require('./utils/normalize-string');
 
+const Promise = require('bluebird');
+
 class BootBot extends EventEmitter {
   constructor(options) {
     super();
@@ -18,11 +20,12 @@ class BootBot extends EventEmitter {
     this.verifyToken = options.verifyToken;
     this.appSecret = options.appSecret;
     this.broadcastEchoes = options.broadcastEchoes || false;
-    this.app = express();
+    this.app = options.app || express();
     this.app.use(bodyParser.json({ verify: this._verifyRequestSignature.bind(this) }));
     this._hearMap = [];
     this._conversations = [];
     this._initWebhook();
+    this.db = options.db;
   }
 
   start(port) {
@@ -371,16 +374,23 @@ class BootBot extends EventEmitter {
             if (event.message && event.message.is_echo && !this.broadcastEchoes) {
               return;
             }
+            console.log(event);
+
             if (event.optin) {
+              this._saveUserToDB(event.sender.id);
               this._handleEvent('authentication', event);
             } else if (event.message && event.message.text) {
+              this._saveUserToDB(event.sender.id);
               this._handleMessageEvent(event);
               if (event.message.quick_reply) {
+                this._saveUserToDB(event.sender.id);
                 this._handleQuickReplyEvent(event);
               }
             } else if (event.message && event.message.attachments) {
+              this._saveUserToDB(event.sender.id);
               this._handleAttachmentEvent(event);
             } else if (event.postback) {
+              this._saveUserToDB(event.sender.id);
               this._handlePostbackEvent(event);
             } else if (event.delivery) {
               this._handleEvent('delivery', event);
@@ -415,6 +425,40 @@ class BootBot extends EventEmitter {
         throw new Error("Couldn't validate the request signature.");
       }
     }
+  }
+
+  _saveUserToDB(userId) {
+    this.getUserProfile(userId).then((user) => {
+      console.log(user);
+      this.db.users.findAndModify({
+          query: { "_id": userId },
+          update: { 
+            $set: { 
+              "first_name": user["first_name"],
+              "last_name": user["last_name"],
+              "profile_pic": user["profile_pic"],
+              "locale": user["locale"],
+              "timezone": user["timezone"],
+              "gender": user["gender"],
+             },
+            $setOnInsert: { 
+              "_id": userId,
+              "subscriptions": {
+                "meetup": false,
+                "newsletter": false
+              },
+              "onboarding": {
+                "postback:NEWSLETTER_SUBSCRIBED" : false
+              }
+            }
+          },
+          new: true,
+          upsert: true
+      })
+      .then((res) => {
+          console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
+      }).catch((err) => {console.log(err)});
+    });
   }
 }
 

@@ -9,7 +9,7 @@ const app = express();
 const BootBot = require('../bootbot/lib/BootBot.js');
 
 const pmongo = require('promised-mongo');
-const db = pmongo(config.dbaddress, ['users', 'messageEvents', 'messageTexts', 'meetups', 'feedbacks']);
+const db = pmongo(config.dbaddress);
 
 const bot = new BootBot({
   accessToken: config.fbPageAccessToken,
@@ -196,7 +196,7 @@ bot.on('postback:MEETUP', (messagingEvent, chat) =>{
 
                     // if user not subscribed than push subscription element
                     const user = messages[9];
-                    const isSubscribed = user.meetup_subscription;
+                    const isSubscribed = user.subscriptions.meetup;
                     if(!isSubscribed) {
                         elements.push({
                             title: 'Subscribe for Meetup notifications',
@@ -375,7 +375,7 @@ bot.on('postback:MEETUP_SUBSCRIBED', (messagingEvent, chat) =>{
     db.users.findAndModify({
         query: { '_id': messagingEvent.sender.id },
         update: { 
-            $set: { 'subscription.meetup': true }
+            $set: { 'subscriptions.meetup': true }
         },
         new: false,
         upsert: false
@@ -396,7 +396,7 @@ bot.on('postback:MEETUP_UNSUBSCRIBED', (messagingEvent, chat) =>{
     db.users.findAndModify({
         query: { '_id': messagingEvent.sender.id },
         update: { 
-            $set: { 'subscription.meetup': false }
+            $set: { 'subscriptions.meetup': false }
         },
         new: false,
         upsert: false
@@ -625,6 +625,93 @@ bot.on('postback', (messagingEvent, chat, data) => {
         const page = payload.split('_')[2];
         sendArticles(db, chat, 'article', page);
     }
+});
+
+bot.on('postback:SETTINGS', (messagingEvent, chat) => {
+    const newsletterSubscribed = {
+        title: 'You are subscribed for the newsletter.',
+        subtitle: 'Weekly newsletter about chatbots.',
+        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        buttons: [
+            {
+                type: 'postback',
+                title: 'Unsubscribe',
+                payload: 'NEWSLETTER_UNSUBSCRIBED'
+            }
+        ]
+    };
+
+    const meetupSubscribed = {
+        title: 'You are subscribed to meetup notifications.',
+        subtitle: 'You get notified about upcoming meetups.',
+        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        buttons: [
+            {
+                type: 'postback',
+                title: 'Unsubscribe',
+                payload: 'MEETUP_UNSUBSCRIBED'
+            }
+        ]
+    };
+
+    const newsletterUnSubscribed = {
+        title: 'Subscribe for our newsletter.',
+        subtitle: 'Weekly newsletter about chatbots.',
+        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        buttons: [
+            {
+                type: 'postback',
+                title: 'Subscribe',
+                payload: 'NEWSLETTER_SUBSCRIBED'
+            }
+        ]
+    };
+
+    const meetupUnSubscribed = {
+        title: 'Subscribe for Meetup notifications',
+        subtitle: `You get notified as soon as we publish a new meetup.`,
+        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        buttons: [
+            {
+                type: 'postback',
+                title: 'Subscribe',
+                payload: 'MEETUP_SUBSCRIBED'
+            }
+        ]
+    };
+
+    const chatbotConfDiscount = {
+        title: '20% discount for ChatbotConf 2016',
+        subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
+        image_url: 'https://fbcdn-sphotos-a-a.akamaihd.net/hphotos-ak-xaf1/t31.0-8/13661900_1175443692476186_1569793387566369106_o.png',
+        buttons: [
+            {
+                type: 'web_url',
+                title: 'Claim your discount',
+                url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
+            }
+        ]
+    };
+
+    db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
+        const elements = [];
+        if(!user.subscriptions.newsletter) {
+            elements.push(newsletterUnSubscribed);
+        }
+        else {
+            elements.push(newsletterSubscribed);
+        }
+        if(!user.subscriptions.meetup) {
+            elements.push(meetupUnSubscribed);
+        }
+        else {
+            elements.push(meetupSubscribed);
+        }
+        if(user.onboarding['postback:NEWSLETTER_SUBSCRIBED']) {
+            elements.push(chatbotConfDiscount);
+        }
+        chat.sendGenericTemplate(elements);
+    }).catch((err) => { console.log(`Error updating User data: ${err}`);});
 });
 
 bot.hear('settings', (messagingEvent, chat) => {
