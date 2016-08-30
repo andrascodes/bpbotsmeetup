@@ -17,7 +17,7 @@
     "moment": "^2.14.1",
     "mongodb": "^2.2.7",
     "node-fetch": "^1.5.3",
-    "promised-mongo": "^1.2.0",
+    "promised-mongo": "git+https://github.com/mindeavor/promised-mongo.git",
     "request": "^2.74.0",
     "request-promise": "^4.1.1"
   }
