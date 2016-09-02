@@ -1,23 +1,5 @@
 'use strict';
 
-// Aug 16-17 Meetup Bot botkit, JSON messagetexts
-
-// - Clone Botkit.
-//     - Create an example echo bot with it.
-//     - Add analytics capability in config file.
-// - Add all messages burnt in.
-// - Later transfer out all the messages into a json.
-// - That json will be editable through the dashboard.
-
-// - React learning
-// - Building a dashboard for Meetup Bot
-//      - basic analytics
-//      - sending out votes?
-
-// Change the consecutive message sending in BootBot.
-
-// e.g. {{ fb.first_name }}
-
 const requestp = require('request-promise');
 const Promise = require('bluebird');
 const moment = require('moment');
@@ -77,22 +59,14 @@ module.exports = function getCompletedMessage(messageText, chat) {
                         moment(meetupResults.time).format('MMMM D'));
                     }
                     else if(substitute.capture.includes('meetup.month')) {
-                        console.log(substitute.capture);
-                        console.log(substitute.capture.split('.'));
                         const options = substitute.capture.split('.')[2];
-                        console.log(`Options: ${typeof options}`);
-                        console.log(`Options: ${options}`);
                         if(options === ('long')) {
                             completeMessage = completeMessage.replace(substitute.match, 
                             moment(meetupResults.time).format('MMMM'));
                         }
                     }
                     else if(substitute.capture.includes('meetup.day')) {
-                        console.log(substitute.capture);
-                        console.log(substitute.capture.split('.'));
                         const options = substitute.capture.split('.')[2];
-                        console.log(`Options: ${typeof options}`);
-                        console.log(`Options: ${options}`);
                         if(options === ('num')) {
                             completeMessage = completeMessage.replace(substitute.match, 
                             moment(meetupResults.time).format('D'));
@@ -117,11 +91,7 @@ module.exports = function getCompletedMessage(messageText, chat) {
                         completeMessage = completeMessage.replace(substitute.match, meetupResults.venue.name);
                     }
                     else if(substitute.capture.includes('meetup.location')) {
-                        console.log(substitute.capture);
-                        console.log(substitute.capture.split('.'));
                         const options = substitute.capture.split('.')[2];
-                        console.log(`Options: ${typeof options}`);
-                        console.log(`Options: ${options}`);
                         if(options === ('address')) {
                             completeMessage = completeMessage.replace(substitute.match, meetupResults.venue['address_1']);
                         }

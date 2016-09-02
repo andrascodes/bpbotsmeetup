@@ -26,6 +26,9 @@ class BootBot extends EventEmitter {
     this._conversations = [];
     this._initWebhook();
     this.db = options.db;
+
+    // If users trigger the don't understand message they will be added in here.'
+    this.retargetingArray = {};
   }
 
   start(port) {
@@ -104,12 +107,14 @@ class BootBot extends EventEmitter {
   sendMessage(recipientId, message, options) {
     const onDelivery = options && options.onDelivery;
     const onRead = options && options.onRead;
+    const notification = (options && options.notification_type) || 'REGULAR';
     const req = () => (
       this.sendRequest({
         recipient: {
           id: recipientId
         },
-        message
+        message,
+        notification_type: notification
       }).then((json) => {
         if (typeof onDelivery === 'function') {
           this.once('delivery', onDelivery);
@@ -377,21 +382,27 @@ class BootBot extends EventEmitter {
             console.log(event);
 
             if (event.optin) {
-              this._saveUserToDB(event.sender.id);
-              this._handleEvent('authentication', event);
+              this._saveUserToDB(event.sender.id).then(() => {
+                this._handleEvent('authentication', event);
+              });
             } else if (event.message && event.message.text) {
-              this._saveUserToDB(event.sender.id);
-              this._handleMessageEvent(event);
+              this._saveUserToDB(event.sender.id).then(() => {
+                this._handleMessageEvent(event);
+              });
+              
               if (event.message.quick_reply) {
-                this._saveUserToDB(event.sender.id);
-                this._handleQuickReplyEvent(event);
+                this._saveUserToDB(event.sender.id).then(() => {
+                  this._handleQuickReplyEvent(event);
+                });
               }
             } else if (event.message && event.message.attachments) {
-              this._saveUserToDB(event.sender.id);
-              this._handleAttachmentEvent(event);
+              this._saveUserToDB(event.sender.id).then(() => {
+                this._handleAttachmentEvent(event);
+              });
             } else if (event.postback) {
-              this._saveUserToDB(event.sender.id);
-              this._handlePostbackEvent(event);
+              this._saveUserToDB(event.sender.id).then(() => {
+                this._handlePostbackEvent(event);
+              });
             } else if (event.delivery) {
               this._handleEvent('delivery', event);
             } else if (event.read) {
@@ -427,10 +438,36 @@ class BootBot extends EventEmitter {
     }
   }
 
+  // returns true if the user should be retargeted with a message
+  // return false if the user didn't trigger the defaultMessage enough times yet
+  targetUser(userId) {
+    const targetedThisMuch = this.retargetingArray[userId.toString()];
+    if(targetedThisMuch) {
+      this.retargetingArray[userId.toString()]++;
+      if(this.retargetingArray[userId.toString()] >= 3) {
+        return true;
+      }
+    }
+    else {
+      this.retargetingArray[userId.toString()] = 1;
+      return false;
+    }
+  }
+
+  untargetUser(userId) {
+    delete this.retargetingArray[userId.toString()];
+  }
+  
+
   _saveUserToDB(userId) {
-    this.getUserProfile(userId).then((user) => {
+    return this.getUserProfile(userId).then((user) => {
       console.log(user);
-      this.db.users.findAndModify({
+      const admins = ['1135224343200481', '1126342277412426', '1388594137833781'];
+      let isAdmin = false;
+      if(admins.indexOf(userId) >= 0) {
+        isAdmin = true;
+      }
+      return this.db.users.findAndModify({
           query: { "_id": userId },
           update: { 
             $set: { 
@@ -440,6 +477,7 @@ class BootBot extends EventEmitter {
               "locale": user["locale"],
               "timezone": user["timezone"],
               "gender": user["gender"],
+              "admin": isAdmin,
              },
             $setOnInsert: { 
               "_id": userId,
@@ -448,6 +486,7 @@ class BootBot extends EventEmitter {
                 "newsletter": false
               },
               "onboarding": {
+                "postback:GET_STARTED" : false,
                 "postback:NEWSLETTER_SUBSCRIBED" : false
               }
             }

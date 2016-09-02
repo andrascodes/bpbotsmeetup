@@ -11,9 +11,41 @@ class Chat extends EventEmitter {
     this.userId = userId;
   }
 
+  // Self defined
   getDB() {
     return this.bot.db;
   }
+
+  sayMultiple(messagesWithOptions) {
+    const chat = this;
+    const promiseArray = [];
+    messagesWithOptions.forEach((messageWithOptions) => {
+      const options = messageWithOptions.options;
+      if(messageWithOptions.message) {
+        const messagePromise = function() {
+          return Promise.resolve(chat.say(messageWithOptions.message, options));
+        }
+        promiseArray.push(messagePromise);
+      }
+      else if(messageWithOptions.generic) {
+        const messagePromise = function() {
+          return Promise.resolve(chat.sendGenericTemplate(messageWithOptions.generic, options));
+        }
+        promiseArray.push(messagePromise);
+      }
+      
+    });
+
+    function pseries(list) {  
+        var p = Promise.resolve();
+        return list.reduce(function(pacc, fn) {
+            return pacc = pacc.then(fn);
+        }, p);
+    }
+
+    return pseries(promiseArray);
+  }
+  // END
 
   say(message, options) {
     return this.bot.say(this.userId, message, options);
