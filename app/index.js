@@ -314,7 +314,7 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
                             convo.say(`Incorrect input. Try again!`).then(() => askWhichTalk(convo, talks, typingTime));
                         }
                         else if(payload.message.text === 'Never mind') {
-                            convo.say(`Question cancelled...`).then(() => convo.end());
+                            convo.say(`That's alright. ;) Question cancelled.`).then(() => convo.end());
                         }
                         else {
                             const text = payload.message.text;
@@ -332,7 +332,7 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
                             convo.say(`Incorrect input. Try again!`).then(() => placeQuestion(convo, talkName));
                         }
                         else if(payload.message.quick_reply && payload.message.text === 'Never mind') {
-                            convo.say(`Question cancelled...`).then(() => convo.end());
+                            convo.say(`No problem. :) Question cancelled.`).then(() => convo.end());
                         }
                         else {
                             const text = payload.message.text;
@@ -493,7 +493,7 @@ function feedbackFeature(messagingEvent, chat, data) {
                     .then((res) => {
                         console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
                         convo.say(`Thank you ${user.first_name}, I have passed this on to my creators.`).then(() => convo.end());
-                        notifyAdmins(bot, 'feedback', text, `${user.first_name} ${user.last_name}`)
+                        notifyAdmins(bot, 'feedback', text, user)
                         .catch((err) => { console.log(err) });
                     });
                 });
@@ -869,89 +869,187 @@ bot.on('postback', (messagingEvent, chat, data) => {
 // Any other text, including NLP
 bot.hear(/(.*)/, (messagingEvent, chat, data) => {
     if(!data.captured) {
-        function NLP(text) {
-            const menuRegex = /.*\s*[f|F]loy*/;
-            const introRegex = /.*((n|N)ame|(c|C)all|(w|W)ho('re|\sare)\s(y|Y)ou).*/;
-            const creatorRegex = /.*(creat.*|make.*|made.*).*/;
-            const locationRegex = /.*((w|W)here.*you[^r]).*/;
 
-            if(menuRegex.test(text)) {
-                console.log('Floyd');
-                return 'menu';
-            }
-            else if(introRegex.test(text)) {
-                return 'intro';
-            }
-            else if(creatorRegex.test(text)) {
-                return 'creator';
-            }
-            else if(locationRegex.test(text)) {
-                return 'location';
-            }
-            else {
-                return 'null';
-            }
+        function sendLatestMeetupQuestions() {
+            const now = new Date();
+                let today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
+                
+                // MeetupDay for testing - Comment out in production
+                today = new Date(2016, 8, 6).getTime();
+                tomorrow = new Date(2016, 8, 7).getTime();
+                
+                db.meetups.find({ "endtime": { $gte : today, $lte : tomorrow } }).sort({"time": -1}).limit(1).then((todaysMeetup) => {
+                    const talks = todaysMeetup[0].talks;
+                    const questionTalks = talks.filter((talk) => {
+                        return talk.questions.length > 0;
+                    });
+                    const talkTitles = questionTalks.map((talk) => {
+                        return talk.title.slice(14, 14+16) + '...';
+                    });
+                    
+                    const quickReplyArray = Array.from(talkTitles);
+                    quickReplyArray.push('Never mind');
 
-            // Who are you? Who, who, who, who? Easter egg
-            // Link: https://youtu.be/PdLIerfXuZ4
-        }
+                    function askQuestions(convo) {
+                        convo.ask({
+                            text: 'Hi, Boss! 8)\nPlease choose a talk:',
+                            quickReplies: quickReplyArray
+                        }, (payload, convo, data) => {
+                            if(!payload.message || !payload.message.quick_reply) {
+                                convo.say(`Incorrect input.`).then(() => askQuestions(convo));
+                            }
+                            else if(payload.message.text === 'Never mind') {
+                                convo.say(`Okay, Boss. No worries. ;)`).then(() => convo.end());
+                            }
+                            else {
+                                const text = payload.message.text;
+                                convo.say(`Questions incoming...`).then(() => {
 
-        const userId = messagingEvent.sender.id;
-        const message = messagingEvent.message.text;
-        switch( NLP(message) ) {
-            case 'menu':
-                chat.getUserProfile(userId).then((user) => {
-                    chat.say({
-                        text: `Hi, ${user.first_name}! How may I assist you?`,
-                        buttons: [
-                            { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
-                            { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
-                            { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
-                        ]
+                                    const pickedTalk = questionTalks[questionTalks.findIndex((talk) => {
+                                        return talk.title.includes(text.slice(0, -3));
+                                    })];
+
+                                    const questions = [];
+                                    const userProfiles = [];
+                                    pickedTalk.questions.forEach((question) => {
+                                        userProfiles.push(convo.getUserProfile(question.userID));
+                                    });
+
+                                    Promise.all(userProfiles).then((profiles) => {
+                                        console.log(profiles);
+                                        for(let i=0; i<pickedTalk.questions.length; ++i) {
+                                            questions.push({
+                                                message: `${profiles[i].first_name} ${profiles[i].last_name} asks: `+
+                                                        `"${pickedTalk.questions[i].question}"`,
+                                                option: null
+                                            });
+                                        }
+
+                                        convo.sayMultiple(questions).then(() => {
+                                            convo.end();
+                                        });
+                                    });     
+                                });
+                            }
+                        });
+                    };
+
+                    chat.conversation((convo) => {
+                        askQuestions(convo);
                     });
                 });
-                break;
-            case 'intro':
-                const introMessages = [
-                    'My name is Bot 207, at your service.',
-                    'My designation is Bot 207 bot some of my fellow bots call me Floyd.',
-                    'My designation is Bot 207 but you can call me Floyd.',
-                ];
-                chat.say(pickRandomElement(introMessages));
-                break;
-            case 'creator':
-                const creatorMessages = [
-                    `I was made by the humans at Budapest Bots. I'm not sure who made them though.`,
-                    `Humans at Budapest Bots made me in their image, not sure how well I match.`,
-                    `My creators are humans at Budapest Bots.`,
-                ];
-                chat.say(pickRandomElement(creatorMessages));
-                break;
-            case 'location':
-                const locationMessages = [
-                    `I'm in many places, in Facebook Messenger, the cloud and hopefully after some time, also in your <3 .`
-                ];
-                chat.say(pickRandomElement(locationMessages));
-            break;
-            default:
-                chat.sayMultiple(pickRandomElement(defaultMessages)).then(() => {
-                    const commenceRetargeting = bot.targetUser(userId);
-                    if(commenceRetargeting) {
+        }
+
+        function NLP(text) {
+                const menuRegex = /.*\s*[f|F]loy*/;
+                const introRegex = /.*((n|N)ame|(c|C)all|(w|W)ho('re|\sare)\s(y|Y)ou).*/;
+                const creatorRegex = /.*(creat.*|make.*|made.*).*/;
+                const locationRegex = /.*((w|W)here.*you[^r]).*/;
+                const questionRegex = /(q|Q)uestions/;
+
+                if(menuRegex.test(text)) {
+                    return 'menu';
+                }
+                else if(introRegex.test(text)) {
+                    return 'intro';
+                }
+                else if(creatorRegex.test(text)) {
+                    return 'creator';
+                }
+                else if(locationRegex.test(text)) {
+                    return 'location';
+                }
+                else if(questionRegex.test(text)) {
+                    const isAdmin = config.admins.some((admin) => {
+                        return admin.userID == messagingEvent.sender.id;
+                    });
+
+                    if(isAdmin) {
+                        return 'question';
+                    }
+                    else {
+                        return 'null';
+                    }
+                }
+                else {
+                    return 'null';
+                }
+
+                // Who are you? Who, who, who, who? Easter egg
+                // Link: https://youtu.be/PdLIerfXuZ4
+            }
+
+            const userId = messagingEvent.sender.id;
+            const message = messagingEvent.message.text;
+            switch( NLP(message) ) {
+                case 'menu':
+                    chat.getUserProfile(userId).then((user) => {
                         chat.say({
-                            text: `I am here to assist you with meetup and chatbot related stuff.\n` + 
-                            `I suppose we could talk about these topics:`,
+                            text: `Hi, ${user.first_name}! How may I assist you?`,
                             buttons: [
                                 { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
                                 { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
                                 { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
                             ]
-                        }, { typing: true }).then(() => {
-                            bot.untargetUser(userId);
                         });
-                    }
-                });
-        }
+                    });
+                    break;
+                case 'intro':
+                    const introMessages = [
+                        'My name is Bot 207, at your service.',
+                        'My designation is Bot 207 bot some of my fellow bots call me Floyd.',
+                        'My designation is Bot 207 but you can call me Floyd.',
+                    ];
+                    chat.say(pickRandomElement(introMessages));
+                    break;
+                case 'creator':
+                    const creatorMessages = [
+                        `I was made by the humans at Budapest Bots. I'm not sure who made them though.`,
+                        `Humans at Budapest Bots made me in their image, not sure how well I match.`,
+                        `My creators are humans at Budapest Bots.`,
+                    ];
+                    chat.say(pickRandomElement(creatorMessages));
+                    break;
+                case 'location':
+                    const locationMessages = [
+                        `I'm in many places, in Facebook Messenger, the cloud and hopefully after some time, also in your <3 .`
+                    ];
+                    chat.say(pickRandomElement(locationMessages));
+                    break;
+                case 'question':
+                    sendLatestMeetupQuestions();
+                    break;
+                default:
+                    chat.sayMultiple(pickRandomElement(defaultMessages)).then(() => {
+                        const commenceRetargeting = bot.targetUser(userId);
+                        if(commenceRetargeting) {
+                            chat.say({
+                                text: `I am here to assist you with meetup and chatbot related stuff.\n` + 
+                                `I suppose we could talk about these topics:`,
+                                buttons: [
+                                    { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
+                                    { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
+                                    { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
+                                ]
+                            }, { typing: true }).then(() => {
+                                bot.untargetUser(userId);
+                            });
+                        }
+                    });
+            }
     }
+});
+
+bot.on('attachment', (messagingEvent, chat, data) => {
+    const attachmentMessages = [
+        `Right back at ya! (y)`,
+        `Cool! (y)`,
+        `Awesome! (y)`,
+        `Love it! (y)`,
+        `Here's a "Like" for you. (y)`
+    ]
+    chat.say(pickRandomElement(attachmentMessages));
 });
 
 

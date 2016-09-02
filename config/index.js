@@ -7,7 +7,24 @@ const config = {
 	appSecret: process.env.FB_APP_SECRET,
 	dbaddress: process.env.MONGODB_URI,
 	dashbotKey: process.env.DASHBOT_API_KEY,
-	botmetricsKey: process.env.BOTMETRICS_API_KEY
+	botmetricsKey: process.env.BOTMETRICS_API_KEY,
+    admins: [
+        {
+            // Prod
+            name: "Mátyás Szaszkó",
+            userID: '1126342277412426'
+        },
+        {
+            // Test
+            name: "András Szücs",
+            userID: '1388594137833781'
+        },
+        {
+            // Prod
+            name: "András Szücs",
+            userID: '1135224343200481'
+        }
+    ]
 }
 
 if(process.env.DEVELOPMENT) {

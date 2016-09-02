@@ -34,12 +34,7 @@ module.exports = function getCompletedMessage(messageText, chat) {
         pluginPromises.meetup = null;
     }
 
-    if(plugins.has('fb')) {
-        // const options = {
-        //     uri: `https://graph.facebook.com/v2.6/${userID}?fields=first_name,last_name,profile_pic,locale,timezone,gender&access_token=${config.pageAccessToken}`,
-        //     json: true
-        // }
-        //pluginPromises.fb = requestp(options);        
+    if(plugins.has('fb')) {     
         pluginPromises.fb = chat.getUserProfile();
     } else {
         pluginPromises.fb = null;
