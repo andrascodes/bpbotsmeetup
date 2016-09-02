@@ -1,6 +1,9 @@
 'use strict';
 
-const admins = ['1135224343200481', '1126342277412426', '1388594137833781'];
+const matyi = '1126342277412426';
+const me_test = '1388594137833781';
+const me_prod = '1135224343200481';
+const admins = [me_test, me_prod];
 
 module.exports = function notifyAdmins(bot, type, message, userName) {
     console.log(type);
