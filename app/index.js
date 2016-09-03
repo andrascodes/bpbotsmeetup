@@ -6,6 +6,8 @@ const Promise = require('bluebird');
 const config = require('../config');
 const app = express();
 
+const routes = require('./routes')(app);
+
 const BootBot = require('../bootbot/lib/BootBot.js');
 
 const pmongo = require('promised-mongo');
