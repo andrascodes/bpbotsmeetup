@@ -26,6 +26,7 @@ class BootBot extends EventEmitter {
     this._conversations = [];
     this._initWebhook();
     this.db = options.db;
+    this.admins = options.admins;
 
     // If users trigger the don't understand message they will be added in here.'
     this.retargetingArray = {};
@@ -462,9 +463,12 @@ class BootBot extends EventEmitter {
   _saveUserToDB(userId) {
     return this.getUserProfile(userId).then((user) => {
       console.log(user);
-      const admins = ['1135224343200481', '1126342277412426', '1388594137833781'];
+      const admins = this.admins;
       let isAdmin = false;
-      if(admins.indexOf(userId) >= 0) {
+      const adminIndex = admins.findIndex((admin) => {
+        return userId == admin.userID;
+      });
+      if(adminIndex >= 0) {
         isAdmin = true;
       }
       return this.db.users.findAndModify({

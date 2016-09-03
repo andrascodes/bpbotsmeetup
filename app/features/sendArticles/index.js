@@ -45,15 +45,23 @@ const Promise = require('bluebird');
 
 
 
-const defaultImageLink = `https://tctechcrunch2011.files.wordpress.com/2016/04/facebook-chatbot-alt.png`;
+const defaultIntroLink = `http://i.imgur.com/MH6AN4B.png`;
+const defaultArticleLink = `http://i.imgur.com/JIw2fSA.png`;
 
 module.exports = function sendArticles(db, chat, type, page) {
     db.articles.find({ "type": type }).limit(9).skip( (page - 1) * 9 ).toArray()
         .then((articles) => {
             const elements = [];
+            let imageUrl = null;
+            if(type === 'intro' ) {
+                imageUrl = defaultIntroLink;
+            }
+            else if(type === 'article') {
+                imageUrl = defaultArticleLink;
+            }
             articles.forEach((article) => {
-                if(!article.image_url) {
-                    article.image_url = defaultImageLink;
+                if(!article.image_url || article.image_url) {
+                    article.image_url = imageUrl;
                 }
 
                 elements.push({
@@ -73,7 +81,7 @@ module.exports = function sendArticles(db, chat, type, page) {
             const showMore = {
                 title: `It's not over yet.`,
                 subtitle: `You can find more amazing articles like this, just click the 'Show more' button.`,
-                image_url: defaultImageLink,
+                image_url: imageUrl,
                 buttons: [
                     {
                         type: 'postback',

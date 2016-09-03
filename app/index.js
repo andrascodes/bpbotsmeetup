@@ -18,7 +18,8 @@ const bot = new BootBot({
   verifyToken: config.verifyToken,
   appSecret: config.appSecret,
   app: app,
-  db: db
+  db: db,
+  admins: config.admins
 });
 
 const getCompletedMessage = require('./features');
@@ -84,7 +85,7 @@ function greetingFeature(messagingEvent, chat, data) {
                     text: `I'm here to assist you with meetup and chatbot related stuff.`,
                     buttons: [
                         { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
-                        { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
+                        { type: 'postback', title: 'Read bot articles', payload: 'NEWSLETTER' },
                         { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
                     ]
                 },
@@ -96,7 +97,7 @@ function greetingFeature(messagingEvent, chat, data) {
             text: `Hi, ${first_name}! How may I assist you?`,
             buttons: [
                 { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
-                { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
+                { type: 'postback', title: 'Read bot articles', payload: 'NEWSLETTER' },
                 { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
             ]
         };
@@ -175,7 +176,7 @@ function meetupFeature(messagingEvent, chat, data) {
                         {
                             title: meetupTitle,
                             subtitle: meetupSubtitle,
-                            image_url: 'https://fbcdn-sphotos-a-a.akamaihd.net/hphotos-ak-xpl1/v/t1.0-9/13887109_643758782447215_5350140108993128253_n.jpg?oh=e45418ff3db383f90cd4586a0974fe96&oe=5848A9CE&__gda__=1480421954_4fd7a72409ee195e60e86b2a8dd96fb7',
+                            image_url:  'http://i.imgur.com/dORdxei.png', //'http://i.imgur.com/2v3uz4B.png',
                             buttons: [
                                 {
                                     type: 'postback',
@@ -197,13 +198,18 @@ function meetupFeature(messagingEvent, chat, data) {
                         {
                             title: locTitle,
                             subtitle: locSubtitle,
-                            image_url: 'http://faninfo.hu/library/images/0x6368/thumbnail/714.jpg',
+                            image_url: 'http://i.imgur.com/BHleHKN.png',
                             buttons: [
                                 {
                                     type: 'web_url',
                                     title: 'Show on map',
                                     url: meetupLocationUrl
                                 },
+                                {
+                                    type: 'web_url',
+                                    title: 'Go to Facebook Page',
+                                    url: 'https://www.facebook.com/alapcafe'
+                                }
                             ]
                         }
                     ];
@@ -212,7 +218,7 @@ function meetupFeature(messagingEvent, chat, data) {
                         elements.unshift({
                             title: todayTitle,
                             subtitle: todaySubtitle,
-                            image_url: 'http://i.giphy.com/MTclfCr4tVgis.gif',
+                            image_url: 'http://i.imgur.com/gk4Cf0D.png',
                             buttons: [
                                 {
                                     type: 'postback',
@@ -240,9 +246,9 @@ function meetupFeature(messagingEvent, chat, data) {
                     if(!isSubscribed) {
                         elements.push({
                             title: 'Subscribe for Meetup notifications',
-                            subtitle: 'You get notified as soon as we publish a new meetup.',
+                            subtitle: `You'll get notified as soon as we publish a new meetup.`,
                             
-                            image_url: 'http://i.giphy.com/l41m4CnsZLzlYYbT2.gif', //'http://static1.squarespace.com/static/565373abe4b01a919ada14a7/t/56543a93e4b0ae5fc67ba90b/1456740220665/',
+                            image_url: 'http://i.imgur.com/O0ZiM8v.png',
                             buttons: [
                                 {
                                     type: 'postback',
@@ -416,10 +422,7 @@ function meetupSubscribed(messagingEvent, chat, data) {
         .then((res) => {
             //console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
             chat.say('Thanks for subscribing!').then(() => {
-                chat.say({
-                    attachment: 'image',
-                    url: 'http://i.giphy.com/3o85xqwxtzdcX5c5Zm.gif'
-                });
+                
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});
 }
@@ -436,10 +439,7 @@ function meetupUnsubscribed(messagingEvent, chat, data) {
         .then((res) => {
             //console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
             chat.say('Sorry to see you go. :( ').then(() => {
-                chat.say({
-                    attachment: 'image',
-                    url: 'http://i.giphy.com/3oEduQoZbu9hX1x720.gif'
-                });
+
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});
 }
@@ -468,7 +468,7 @@ function feedbackFeature(messagingEvent, chat, data) {
                     const text = payload.message.text;
                     convo.say(`So you want to ${text.toLowerCase()}.`).then(() => askFeedback(convo, text));
                 }
-        }, options);
+        });
     };
 
     const askFeedback = (convo, type) => {
@@ -514,7 +514,7 @@ function newsletterFeature(messagingEvent, chat, data) {
         title: 'Subscribe for our Messenger Newsletter',
         subtitle: 'Weekly newsletter about chatbots.',
         
-        image_url: 'http://i.giphy.com/l41m4CnsZLzlYYbT2.gif', //'http://static1.squarespace.com/static/565373abe4b01a919ada14a7/t/56543a93e4b0ae5fc67ba90b/1456740220665/',
+        image_url: 'http://i.imgur.com/Q4D0c9x.png', //'http://static1.squarespace.com/static/565373abe4b01a919ada14a7/t/56543a93e4b0ae5fc67ba90b/1456740220665/',
         buttons: [
             {
                 type: 'postback',
@@ -528,7 +528,7 @@ function newsletterFeature(messagingEvent, chat, data) {
         {
             title: 'Intro to Chatbots',
             subtitle: 'A collection of introductory articles.',
-            image_url: 'https://cdn-images-1.medium.com/max/2000/1*VEjac4_01wYvknGu3k4DNw.png',
+            image_url: 'http://i.imgur.com/MH6AN4B.png',
             buttons: [
                 {
                     type: 'postback',
@@ -540,7 +540,7 @@ function newsletterFeature(messagingEvent, chat, data) {
         {
             title: 'Curated articles',
             subtitle: 'The best articles from our past newsletters.',
-            image_url: 'https://cdn-images-1.medium.com/max/2000/1*VEjac4_01wYvknGu3k4DNw.png',
+            image_url: 'http://i.imgur.com/JIw2fSA.png',
             buttons: [
                 {
                     type: 'postback',
@@ -595,7 +595,7 @@ function newsletterSubscribed(messagingEvent, chat, data) {
             });
 
             messages.push({
-                message: `You can find your coupon and manage your subscription later in the Settings menu.`,
+                message: `You can find your coupon and manage your subscriptions later in the Settings menu.`,
                 options: options
             });
 
@@ -603,12 +603,17 @@ function newsletterSubscribed(messagingEvent, chat, data) {
                 generic: [{
                     title: '20% discount for ChatbotConf 2016',
                     subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
-                    image_url: 'https://fbcdn-sphotos-a-a.akamaihd.net/hphotos-ak-xaf1/t31.0-8/13661900_1175443692476186_1569793387566369106_o.png',
+                    image_url: 'http://i.imgur.com/Ri4d0mh.png',
                     buttons: [
                         {
                             type: 'web_url',
                             title: 'Claim your discount',
                             url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
+                        },
+                        {
+                            type: 'web_url',
+                            title: `Go to Event Website`,
+                            url: 'http://chatbotconf.com/'
                         }
                     ]
                 }],
@@ -616,21 +621,15 @@ function newsletterSubscribed(messagingEvent, chat, data) {
             });   
         }
 
-        if(!firsttimer) {
+        if(firsttimer) {
             messages.push({
-                message: `You can manage your subscription later in the Settings menu.`,
+                message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
                 options: options
             });
         }
-
-        messages.push({
-            message: `You can type 'settings or use the Menu below to get to the Settings menu.`,
-            options: options
-        });
         
 
        user.subscriptions.newsletter = true;
-       console.log(user);
 
        db.users.findAndModify({
             query: { '_id': user._id },
@@ -661,10 +660,7 @@ function newsletterUnsubscribed(messagingEvent, chat, data) {
         .then((res) => {
             console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
             chat.say('Sorry to see you go. :( ').then(() => {
-                chat.say({
-                    attachment: 'image',
-                    url: 'http://i.giphy.com/3oEduQoZbu9hX1x720.gif'
-                });
+                
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});
 }
@@ -673,7 +669,7 @@ function settingsFeature(messagingEvent, chat, data) {
     const newsletterSubscribed = {
         title: 'You are subscribed for the newsletter.',
         subtitle: 'Weekly newsletter about chatbots.',
-        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        image_url: 'http://i.imgur.com/Q4D0c9x.png',
         buttons: [
             {
                 type: 'postback',
@@ -686,7 +682,7 @@ function settingsFeature(messagingEvent, chat, data) {
     const meetupSubscribed = {
         title: 'You are subscribed to meetup notifications.',
         subtitle: 'You get notified about upcoming meetups.',
-        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        image_url: 'http://i.imgur.com/O0ZiM8v.png',
         buttons: [
             {
                 type: 'postback',
@@ -699,7 +695,7 @@ function settingsFeature(messagingEvent, chat, data) {
     const newsletterUnSubscribed = {
         title: 'Subscribe for our newsletter.',
         subtitle: 'Weekly newsletter about chatbots.',
-        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        image_url: 'http://i.imgur.com/Q4D0c9x.png',
         buttons: [
             {
                 type: 'postback',
@@ -712,7 +708,7 @@ function settingsFeature(messagingEvent, chat, data) {
     const meetupUnSubscribed = {
         title: 'Subscribe for Meetup notifications',
         subtitle: `You get notified as soon as we publish a new meetup.`,
-        image_url: 'http://i.giphy.com/3oEduM0FOpx8IrbSEw.gif',
+        image_url: 'http://i.imgur.com/O0ZiM8v.png',
         buttons: [
             {
                 type: 'postback',
@@ -725,12 +721,17 @@ function settingsFeature(messagingEvent, chat, data) {
     const chatbotConfDiscount = {
         title: '20% discount for ChatbotConf 2016',
         subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
-        image_url: 'https://fbcdn-sphotos-a-a.akamaihd.net/hphotos-ak-xaf1/t31.0-8/13661900_1175443692476186_1569793387566369106_o.png',
+        image_url: 'http://i.imgur.com/Ri4d0mh.png',
         buttons: [
             {
                 type: 'web_url',
                 title: 'Claim your discount',
                 url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
+            },
+            {
+                type: 'web_url',
+                title: `Go to Event Website`,
+                url: 'http://chatbotconf.com/'
             }
         ]
     };
@@ -758,70 +759,18 @@ function settingsFeature(messagingEvent, chat, data) {
 
 // Welcome message
 bot.on('postback:GET_STARTED', greetingFeature);
-bot.hear(['hello', 'hi', /hey( there)?/i, 'yo', 'h'], greetingFeature);
-    
-    // db.users.findOne({ "_id": messagingEvent.sender.id }).then((user) => {
-    //     const first_name = user['first_name'];
-    //     const firsttimer = !(user.onboarding['postback:GET_STARTED']);
-
-    //     const firsttimerMessages = [
-    //         {
-    //             message: `Hi ${first_name}, it's nice to meet you!`,
-    //             options: null
-    //         },
-    //         {
-    //             message: `I am Bot 207, but you can call me Floyd.`,
-    //             options: { typing: true }
-    //         },
-    //         {
-    //             message: {
-    //                 text: `I am here to assist you with meetup and chatbot related stuff.`,
-    //                 buttons: [
-    //                     { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
-    //                     { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
-    //                     { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
-    //                 ]
-    //             },
-    //             options: { typing: true }
-    //         }
-    //     ];
-
-    //     const simpleGreeting = {
-    //         text: `Hi, ${first_name}! How may I assist you?`,
-    //         buttons: [
-    //             { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
-    //             { type: 'postback', title: 'Read chatbot news', payload: 'NEWSLETTER' },
-    //             { type: 'postback', title: 'Leave feedback', payload: 'FEEDBACK' },
-    //         ]
-    //     };
-
-    //     if(firsttimer) {
-    //         user.onboarding['postback:GET_STARTED'] = true;
-    //         chat.sayMultiple(firsttimerMessages).then(() => {
-    //             db.users.findAndModify({
-    //                 query: { "_id": user['_id'] },
-    //                 update: { $set: user },
-    //                 new: false,
-    //                 upsert: false
-    //             })
-    //             .then().catch((err) => { console.log(`Error updating User data: ${err}`);});
-    //         });
-            
-    //     }
-    //     else {
-    //         chat.say(simpleGreeting);
-    //     }
-    // }).catch((err) => { console.log(`Error getting User data: ${err}`);});
+bot.hear(['hello', 'hi', /hey( there)?/i, 'yo', 'h', 'restart'], greetingFeature);
 
 // Meetup
 bot.on('postback:MEETUP', meetupFeature);
-bot.hear(['meetup', 'Meetup', 'meetups'], meetupFeature);
+bot.hear(['meetup', 'meetups', 'next'], meetupFeature);
 
 // Meetup question
 bot.on('postback:MEETUP_QUESTION', meetupQuestionFeature);
 
 // Meetup Agenda
 bot.on('postback:MEETUP_AGENDA', meetupAgendaFeature);
+bot.hear(['agenda'], meetupAgendaFeature);
 
 // Meetup Subscribed
 bot.on('postback:MEETUP_SUBSCRIBED', meetupSubscribed);
@@ -831,9 +780,11 @@ bot.on('postback:MEETUP_UNSUBSCRIBED', meetupUnsubscribed);
 
 // Leave a Feedback
 bot.on('postback:FEEDBACK', feedbackFeature);
+bot.hear(['feedback', 'message'], feedbackFeature);
 
 // Newsletter
 bot.on('postback:NEWSLETTER', newsletterFeature);
+bot.hear(['articles', 'read', 'news', 'newsletter'], newsletterFeature);
 
 // Newsletter subscribed
 bot.on('postback:NEWSLETTER_SUBSCRIBED', newsletterSubscribed);
@@ -843,7 +794,7 @@ bot.on('postback:NEWSLETTER_UNSUBSCRIBED', newsletterUnsubscribed);
 
 // Settings
 bot.on('postback:SETTINGS', settingsFeature);
-bot.hear(['settings', 'Settings'], settingsFeature);
+bot.hear(['settings', 'subscriptions', 'subscription', 'coupon'], settingsFeature);
 
 // Any other postback: Article pages
 bot.on('postback', (messagingEvent, chat, data) => {
