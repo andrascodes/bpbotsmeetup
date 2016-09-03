@@ -44,10 +44,6 @@ const notifyAdmins = require('./features/notifyAdmins');
 // Take down today's meetup. Add a rule for past meetups, when there are no upcoming meetups.
 // Display a past meetup element with link to the meetup site and resources.
 
-// Change images and texts so they are production ready.
-// Use leave feedback to contact the organizers. Maybe ask for their contacts...
-
-
 // Subscribe with email to newsletter (Mailchimp)
 
 // Import messageText from DB.
@@ -140,8 +136,8 @@ function meetupFeature(messagingEvent, chat, data) {
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
 
                 // MeetupDay for testing - Comment out in production
-                today = new Date(2016, 8, 6).getTime();
-                tomorrow = new Date(2016, 8, 7).getTime();
+                // today = new Date(2016, 8, 6).getTime();
+                // tomorrow = new Date(2016, 8, 7).getTime();
 
                 // Check if meetup is today
                 const todaysMeetup = (nextMeetup.time >= today && nextMeetup.time <= tomorrow);
@@ -411,20 +407,47 @@ function meetupAgendaFeature(messagingEvent, chat, data) {
 }
 
 function meetupSubscribed(messagingEvent, chat, data) {
-    db.users.findAndModify({
-        query: { '_id': messagingEvent.sender.id },
-        update: { 
-            $set: { 'subscriptions.meetup': true }
-        },
-        new: false,
-        upsert: false
-    })
-        .then((res) => {
-            //console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
-            chat.say('Thanks for subscribing!').then(() => {
-                
+
+    db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
+        const options = { typing: true };
+        const messages = [];
+        const thanksMessage = {
+            message: `Thanks for subscribing! :)`,
+            options: null
+        };
+        messages.push(thanksMessage);
+
+       const firsttimer = !(user.onboarding['postback:MEETUP_SUBSCRIBED']);
+        if(firsttimer) {
+            user.onboarding['postback:MEETUP_SUBSCRIBED'] = true;
+            messages.push({
+                message: `You can manage your subscriptions later in the Settings menu.`,
+                options: options
+            });  
+
+            messages.push({
+                message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
+                options: options
             });
-        }).catch((err) => { console.log(`Error updating User data: ${err}`);});
+        }
+
+       user.subscriptions.meetup = true;
+
+       db.users.findAndModify({
+            query: { '_id': user._id },
+            update: { 
+                $set: user
+            },
+            new: true,
+            upsert: false
+        })
+            .then((res) => {
+                console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
+
+                chat.sayMultiple(messages);
+
+            }).catch((err) => { console.log(`Error updating User data: ${err}`);});     
+    }).catch((err) => { console.log(`Error getting User data: ${err}`);});
 }
 
 function meetupUnsubscribed(messagingEvent, chat, data) {
@@ -438,7 +461,7 @@ function meetupUnsubscribed(messagingEvent, chat, data) {
     })
         .then((res) => {
             //console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
-            chat.say('Sorry to see you go. :( ').then(() => {
+            chat.say('Sorry to see you go. :( Unsubscribed from Meetup notifications.').then(() => {
 
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});
@@ -659,7 +682,7 @@ function newsletterUnsubscribed(messagingEvent, chat, data) {
     })
         .then((res) => {
             console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
-            chat.say('Sorry to see you go. :( ').then(() => {
+            chat.say('Sorry to see you go. :( Unsubscribed from newsletter.').then(() => {
                 
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});

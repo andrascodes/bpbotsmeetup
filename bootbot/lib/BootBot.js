@@ -491,7 +491,8 @@ class BootBot extends EventEmitter {
               },
               "onboarding": {
                 "postback:GET_STARTED" : false,
-                "postback:NEWSLETTER_SUBSCRIBED" : false
+                "postback:NEWSLETTER_SUBSCRIBED" : false,
+                "postback:MEETUP_SUBSCRIBED" : false
               }
             }
           },

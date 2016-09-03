@@ -1,7 +1,6 @@
 'use strict';
 
 // TODO:
-// Read ADMIN userIDs from config.
 // Add Answer button to Feedback notification.
 
 const admins = require('../../../config').admins;
