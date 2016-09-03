@@ -23,8 +23,14 @@ const config = {
             // Prod
             name: "András Szücs",
             userID: '1135224343200481'
-        }
-    ]
+        },
+        // {
+        //     // Bots
+        //     name: "András Szücs",
+        //     userID: '1345023502204683'
+        // }
+    ],
+    gift: false
 }
 
 if(process.env.DEVELOPMENT) {

@@ -136,8 +136,8 @@ function meetupFeature(messagingEvent, chat, data) {
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
 
                 // MeetupDay for testing - Comment out in production
-                // today = new Date(2016, 8, 6).getTime();
-                // tomorrow = new Date(2016, 8, 7).getTime();
+                today = new Date(2016, 8, 6).getTime();
+                tomorrow = new Date(2016, 8, 7).getTime();
 
                 // Check if meetup is today
                 const todaysMeetup = (nextMeetup.time >= today && nextMeetup.time <= tomorrow);
@@ -593,64 +593,84 @@ function newsletterSubscribed(messagingEvent, chat, data) {
         messages.push(thanksMessage);
 
         // TODO: Send gift feature in separate function.
+        function sendGift(msgs, gifttime) {
+            if(gifttime) {
+                msgs.push({
+                    message: `Good news! I have a gift for you.`,
+                    options: null
+                });
 
-       const firsttimer = !(user.onboarding['postback:NEWSLETTER_SUBSCRIBED']);
+                msgs.push({
+                    message: `Please accept a 20% discount coupon for ChatbotConf 2016!`,
+                    options: options
+                });
+
+                msgs.push({
+                    message: {
+                        attachment: 'image',
+                        url: 'http://i.imgur.com/L79dIIW.png'
+                    },
+                    options: options
+                });
+
+                msgs.push({
+                    message: `You can learn about building bots like me and meet other cool Botmasters.`,
+                    options: options
+                });
+
+                msgs.push({
+                    message: `You can find your coupon and manage your subscriptions later in the Settings menu.`,
+                    options: options
+                });
+
+                msgs.push({
+                    generic: [{
+                        title: '20% discount for ChatbotConf 2016',
+                        subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
+                        image_url: 'http://i.imgur.com/Ri4d0mh.png',
+                        buttons: [
+                            {
+                                type: 'web_url',
+                                title: 'Claim your discount',
+                                url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
+                            },
+                            {
+                                type: 'web_url',
+                                title: `Go to Event Website`,
+                                url: 'http://chatbotconf.com/'
+                            }
+                        ]
+                    }],
+                    options: options
+                });
+
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+
+        const firsttimer = !(user.onboarding['postback:NEWSLETTER_SUBSCRIBED']);
         if(firsttimer) {
             user.onboarding['postback:NEWSLETTER_SUBSCRIBED'] = true;
-            messages.push({
-                message: `Good news! I have a gift for you.`,
-                options: null
-            });
-            messages.push({
-                message: `Please accept a 20% discount coupon for ChatbotConf 2016!`,
-                options: options
-            });
-            messages.push({
-                message: {
-                    attachment: 'image',
-                    url: 'http://i.imgur.com/L79dIIW.png'
-                },
-                options: options
-            });
-            messages.push({
-                message: `You can learn about building bots like me and meet other cool Botmasters.`,
-                options: options
-            });
-
-            messages.push({
-                message: `You can find your coupon and manage your subscriptions later in the Settings menu.`,
-                options: options
-            });
-
-            messages.push({
-                generic: [{
-                    title: '20% discount for ChatbotConf 2016',
-                    subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
-                    image_url: 'http://i.imgur.com/Ri4d0mh.png',
-                    buttons: [
-                        {
-                            type: 'web_url',
-                            title: 'Claim your discount',
-                            url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
-                        },
-                        {
-                            type: 'web_url',
-                            title: `Go to Event Website`,
-                            url: 'http://chatbotconf.com/'
-                        }
-                    ]
-                }],
-                options: options
-            });   
+            if(sendGift(messages, config.gift)) {
+                messages.push({
+                    message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
+                    options: options
+                });
+            }
+            else {
+                messages.push({
+                    message: `You can manage your subscriptions later in the Settings menu.`,
+                    options: options
+                });
+                messages.push({
+                    message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
+                    options: options
+                });
+            }
         }
-
-        if(firsttimer) {
-            messages.push({
-                message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
-                options: options
-            });
-        }
-        
 
        user.subscriptions.newsletter = true;
 
@@ -739,25 +759,7 @@ function settingsFeature(messagingEvent, chat, data) {
                 payload: 'MEETUP_SUBSCRIBED'
             }
         ]
-    };
-
-    const chatbotConfDiscount = {
-        title: '20% discount for ChatbotConf 2016',
-        subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
-        image_url: 'http://i.imgur.com/Ri4d0mh.png',
-        buttons: [
-            {
-                type: 'web_url',
-                title: 'Claim your discount',
-                url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
-            },
-            {
-                type: 'web_url',
-                title: `Go to Event Website`,
-                url: 'http://chatbotconf.com/'
-            }
-        ]
-    };
+    };    
 
     db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
         const elements = [];
@@ -773,8 +775,24 @@ function settingsFeature(messagingEvent, chat, data) {
         else {
             elements.push(meetupSubscribed);
         }
-        if(user.onboarding['postback:NEWSLETTER_SUBSCRIBED']) {
-            elements.push(chatbotConfDiscount);
+        if( config.gift && user.onboarding['postback:NEWSLETTER_SUBSCRIBED'] ) {
+            elements.push({
+                title: '20% discount for ChatbotConf 2016',
+                subtitle: 'But hurry only the first 10 ticket purchase gets the discount!',
+                image_url: 'http://i.imgur.com/Ri4d0mh.png',
+                buttons: [
+                    {
+                        type: 'web_url',
+                        title: 'Claim your discount',
+                        url: 'https://www.eventbrite.com/e/chatbotconf-2016-tickets-26919852002?discount=budabots10'
+                    },
+                    {
+                        type: 'web_url',
+                        title: `Go to Event Website`,
+                        url: 'http://chatbotconf.com/'
+                    }
+                ]
+            });
         }
         chat.sendGenericTemplate(elements);
     }).catch((err) => { console.log(`Error updating User data: ${err}`);});
@@ -856,64 +874,73 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                 tomorrow = new Date(2016, 8, 7).getTime();
                 
                 db.meetups.find({ "endtime": { $gte : today, $lte : tomorrow } }).sort({"time": -1}).limit(1).then((todaysMeetup) => {
+                    if(todaysMeetup.length <= 0) {
+                        return chat.say('There are no meetups scheduled today, boss. :)');
+                    }
                     const talks = todaysMeetup[0].talks;
                     const questionTalks = talks.filter((talk) => {
                         return talk.questions.length > 0;
                     });
-                    const talkTitles = questionTalks.map((talk) => {
-                        return talk.title.slice(14, 14+16) + '...';
-                    });
-                    
-                    const quickReplyArray = Array.from(talkTitles);
-                    quickReplyArray.push('Never mind');
 
-                    function askQuestions(convo) {
-                        convo.ask({
-                            text: 'Hi, Boss! 8)\nPlease choose a talk:',
-                            quickReplies: quickReplyArray
-                        }, (payload, convo, data) => {
-                            if(!payload.message || !payload.message.quick_reply) {
-                                convo.say(`Incorrect input.`).then(() => askQuestions(convo));
-                            }
-                            else if(payload.message.text === 'Never mind') {
-                                convo.say(`Okay, Boss. No worries. ;)`).then(() => convo.end());
-                            }
-                            else {
-                                const text = payload.message.text;
-                                convo.say(`Questions incoming...`).then(() => {
-
-                                    const pickedTalk = questionTalks[questionTalks.findIndex((talk) => {
-                                        return talk.title.includes(text.slice(0, -3));
-                                    })];
-
-                                    const questions = [];
-                                    const userProfiles = [];
-                                    pickedTalk.questions.forEach((question) => {
-                                        userProfiles.push(convo.getUserProfile(question.userID));
-                                    });
-
-                                    Promise.all(userProfiles).then((profiles) => {
-                                        console.log(profiles);
-                                        for(let i=0; i<pickedTalk.questions.length; ++i) {
-                                            questions.push({
-                                                message: `${profiles[i].first_name} ${profiles[i].last_name} asks: `+
-                                                        `"${pickedTalk.questions[i].question}"`,
-                                                option: null
-                                            });
-                                        }
-
-                                        convo.sayMultiple(questions).then(() => {
-                                            convo.end();
-                                        });
-                                    });     
-                                });
-                            }
+                    if(questionTalks.length > 0) {
+                        const talkTitles = questionTalks.map((talk) => {
+                            return talk.title.slice(14, 14+16) + '...';
                         });
-                    };
+                        
+                        const quickReplyArray = Array.from(talkTitles);
+                        quickReplyArray.push('Never mind');
 
-                    chat.conversation((convo) => {
-                        askQuestions(convo);
-                    });
+                        function askQuestions(convo) {
+                            convo.ask({
+                                text: 'Hi, Boss! 8)\nPlease choose a talk:',
+                                quickReplies: quickReplyArray
+                            }, (payload, convo, data) => {
+                                if(!payload.message || !payload.message.quick_reply) {
+                                    convo.say(`Incorrect input.`).then(() => askQuestions(convo));
+                                }
+                                else if(payload.message.text === 'Never mind') {
+                                    convo.say(`Okay, Boss. No worries. ;)`).then(() => convo.end());
+                                }
+                                else {
+                                    const text = payload.message.text;
+                                    convo.say(`Questions incoming...`).then(() => {
+
+                                        const pickedTalk = questionTalks[questionTalks.findIndex((talk) => {
+                                            return talk.title.includes(text.slice(0, -3));
+                                        })];
+
+                                        const questions = [];
+                                        const userProfiles = [];
+                                        pickedTalk.questions.forEach((question) => {
+                                            userProfiles.push(convo.getUserProfile(question.userID));
+                                        });
+
+                                        Promise.all(userProfiles).then((profiles) => {
+                                            console.log(profiles);
+                                            for(let i=0; i<pickedTalk.questions.length; ++i) {
+                                                questions.push({
+                                                    message: `${profiles[i].first_name} ${profiles[i].last_name} asks: `+
+                                                            `"${pickedTalk.questions[i].question}"`,
+                                                    option: null
+                                                });
+                                            }
+
+                                            convo.sayMultiple(questions).then(() => {
+                                                convo.end();
+                                            });
+                                        });     
+                                    });
+                                }
+                            });
+                        };
+
+                        return chat.conversation((convo) => {
+                            askQuestions(convo);
+                        });
+                    }
+                    else {
+                        return chat.say(`I haven't received any meetup questions yet, boss. :)`);
+                    }
                 });
         }
 
