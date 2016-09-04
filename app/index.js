@@ -136,8 +136,8 @@ function meetupFeature(messagingEvent, chat, data) {
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
 
                 // MeetupDay for testing - Comment out in production
-                today = new Date(2016, 8, 6).getTime();
-                tomorrow = new Date(2016, 8, 7).getTime();
+                // today = new Date(2016, 8, 6).getTime();
+                // tomorrow = new Date(2016, 8, 7).getTime();
 
                 // Check if meetup is today
                 const todaysMeetup = (nextMeetup.time >= today && nextMeetup.time <= tomorrow);
@@ -870,8 +870,8 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
                 
                 // MeetupDay for testing - Comment out in production
-                today = new Date(2016, 8, 6).getTime();
-                tomorrow = new Date(2016, 8, 7).getTime();
+                // today = new Date(2016, 8, 6).getTime();
+                // tomorrow = new Date(2016, 8, 7).getTime();
                 
                 db.meetups.find({ "endtime": { $gte : today, $lte : tomorrow } }).sort({"time": -1}).limit(1).then((todaysMeetup) => {
                     if(todaysMeetup.length <= 0) {
