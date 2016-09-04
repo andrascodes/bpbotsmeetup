@@ -53,6 +53,8 @@ messages.json
 
 scripts/setupThreadSetting.js
 
+scripts/reviewNote
+
 meetupAPI.js
 
 meetupbotDB

@@ -120,144 +120,158 @@ function greetingFeature(messagingEvent, chat, data) {
 function meetupFeature(messagingEvent, chat, data) {
     getMeetupInfo(db)
         .then((nextMeetup) => {
-            if(nextMeetup.error) {
-                chat.say('There are no upcoming Meetups scheduled right now.').then(() => {
-                    chat.say({
-                        text: `Subscribe for notifications so you don't miss out on the announcement. `,
-                        buttons: [
-                            { type: 'postback', title: 'Subscribe', payload: 'MEETUP_SUBSCRIBED' },
-                        ]
-                    }, { typing: true });
-                });
-            }
-            else {
-                const now = new Date();
-                let today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-                let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
-
-                // MeetupDay for testing - Comment out in production
-                // today = new Date(2016, 8, 6).getTime();
-                // tomorrow = new Date(2016, 8, 7).getTime();
-
-                // Check if meetup is today
-                const todaysMeetup = (nextMeetup.time >= today && nextMeetup.time <= tomorrow);
-
-                const incompleteMessages = [];
-                incompleteMessages.push(getCompletedMessage(`{{meetup.title}}`, chat));
-                incompleteMessages.push(getCompletedMessage(`{{meetup.month.long}} {{meetup.day.num}}, ` + 
-                    `{{meetup.start}}-{{meetup.end}} at {{meetup.locationName}}`, chat));
-                incompleteMessages.push(getCompletedMessage('{{meetup.calendarUrl}}', chat));
-                incompleteMessages.push(getCompletedMessage(`Venue: {{meetup.locationName}}`, chat));
-                incompleteMessages.push(getCompletedMessage(`{{meetup.location.address}}\n {{meetup.location.city}}`, chat));
-                incompleteMessages.push(getCompletedMessage('{{meetup.start}} at {{meetup.locationName}}', chat));
-                incompleteMessages.push(getCompletedMessage(`Don't forget to submit your questions to the speakers.\n` +
-                    `Also make sure you RSVP!`, chat));
-                incompleteMessages.push(getCompletedMessage('{{meetup.locationUrl}}', chat));
-                incompleteMessages.push(getCompletedMessage('{{meetup.url}}', chat));
-                incompleteMessages.push(db.users.findOne({ '_id': messagingEvent.sender.id }));
-   
-                Promise.all(incompleteMessages).then((messages) => {   
-                    console.log(`Promises: ${JSON.stringify(messages, null, 2)}`);
-                    const meetupTitle = messages[0];
-                    const meetupSubtitle = messages[1];
-                    const calendarUrl = messages[2];
-                    const locTitle = messages[3];
-                    const locSubtitle = messages[4];
-                    const todayTitle = messages[5];
-                    const todaySubtitle = messages[6];
-                    const meetupLocationUrl = messages[7];
-                    const eventPage = messages[8];
-
-                    const elements = [
-                        {
-                            title: meetupTitle,
-                            subtitle: meetupSubtitle,
-                            image_url:  'http://i.imgur.com/dORdxei.png', //'http://i.imgur.com/2v3uz4B.png',
-                            buttons: [
-                                {
-                                    type: 'postback',
-                                    title: 'See the Agenda',
-                                    payload: 'MEETUP_AGENDA'
-                                },
-                                {
-                                    type: 'web_url',
-                                    title: 'Add to Calendar',
-                                    url: calendarUrl
-                                },
-                                {
-                                    type: 'web_url',
-                                    title: 'Go to Event Page',
-                                    url: eventPage
-                                }
-                            ]
-                        },
-                        {
-                            title: locTitle,
-                            subtitle: locSubtitle,
-                            image_url: 'http://i.imgur.com/BHleHKN.png',
-                            buttons: [
-                                {
-                                    type: 'web_url',
-                                    title: 'Show on map',
-                                    url: meetupLocationUrl
-                                },
-                                {
-                                    type: 'web_url',
-                                    title: 'Go to Facebook Page',
-                                    url: 'https://www.facebook.com/alapcafe'
-                                }
-                            ]
+            db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
+                if(nextMeetup.error) {
+                    chat.say('There are no upcoming Meetups scheduled right now.').then(() => {
+                        if(!user.subscriptions.meetup) {
+                            chat.sendGenericTemplate([{
+                                title: 'Subscribe for Meetup notifications',
+                                subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
+                                
+                                image_url: 'http://i.imgur.com/O0ZiM8v.png',
+                                buttons: [
+                                    {
+                                        type: 'postback',
+                                        title: 'Subscribe',
+                                        payload: 'MEETUP_SUBSCRIBED'
+                                    }
+                                ]
+                            }], { typing: true });
                         }
-                    ];
+                        else {
+                            chat.say(`You're subscribed for meetup notifications.\n` + 
+                                        `I'll notify you when there is a new meetup. ;)`, { typing: true });
+                        } 
+                    });
+                }
+                else {
+                    const now = new Date();
+                    let today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                    let tomorrow = new Date(today + 24 * 60 * 60 * 1000);
 
-                    if(todaysMeetup) {
-                        elements.unshift({
-                            title: todayTitle,
-                            subtitle: todaySubtitle,
-                            image_url: 'http://i.imgur.com/gk4Cf0D.png',
-                            buttons: [
-                                {
-                                    type: 'postback',
-                                    title: 'Submit Q&A question',
-                                    payload: 'MEETUP_QUESTION'
-                                },
-                                {
-                                    type: 'web_url',
-                                    title: 'Show venue on map',
-                                    url: meetupLocationUrl
-                                },
-                                {
-                                    type: 'web_url',
-                                    title: 'RSVP on Meetup.com',
-                                    url: eventPage
-                                }
-                            ]
-                        });
-                    }
+                    // MeetupDay for testing - Comment out in production
+                    // today = new Date(2016, 8, 6).getTime();
+                    // tomorrow = new Date(2016, 8, 7).getTime();
 
-                    // if user not subscribed than push subscription element
-                    const user = messages[9];
-                    console.log(user);
-                    const isSubscribed = user.subscriptions.meetup;
-                    if(!isSubscribed) {
-                        elements.push({
-                            title: 'Subscribe for Meetup notifications',
-                            subtitle: `You'll get notified as soon as we publish a new meetup.`,
-                            
-                            image_url: 'http://i.imgur.com/O0ZiM8v.png',
-                            buttons: [
-                                {
-                                    type: 'postback',
-                                    title: 'Subscribe',
-                                    payload: 'MEETUP_SUBSCRIBED'
-                                }
-                            ]
-                        });
-                    }
+                    // Check if meetup is today
+                    const todaysMeetup = (nextMeetup.time >= today && nextMeetup.time <= tomorrow);
 
-                    chat.sendGenericTemplate(elements);
-                });
-            }
+                    const incompleteMessages = [];
+                    incompleteMessages.push(getCompletedMessage(`{{meetup.title}}`, chat));
+                    incompleteMessages.push(getCompletedMessage(`{{meetup.month.long}} {{meetup.day.num}}, ` + 
+                        `{{meetup.start}}-{{meetup.end}} at {{meetup.locationName}}`, chat));
+                    incompleteMessages.push(getCompletedMessage('{{meetup.calendarUrl}}', chat));
+                    incompleteMessages.push(getCompletedMessage(`Venue: {{meetup.locationName}}`, chat));
+                    incompleteMessages.push(getCompletedMessage(`{{meetup.location.address}}\n {{meetup.location.city}}`, chat));
+                    incompleteMessages.push(getCompletedMessage('{{meetup.start}} at {{meetup.locationName}}', chat));
+                    incompleteMessages.push(getCompletedMessage(`Don't forget to submit your questions to the speakers.\n` +
+                        `Also make sure you RSVP!`, chat));
+                    incompleteMessages.push(getCompletedMessage('{{meetup.locationUrl}}', chat));
+                    incompleteMessages.push(getCompletedMessage('{{meetup.url}}', chat));
+    
+                    Promise.all(incompleteMessages).then((messages) => {   
+                        console.log(`Promises: ${JSON.stringify(messages, null, 2)}`);
+                        const meetupTitle = messages[0];
+                        const meetupSubtitle = messages[1];
+                        const calendarUrl = messages[2];
+                        const locTitle = messages[3];
+                        const locSubtitle = messages[4];
+                        const todayTitle = messages[5];
+                        const todaySubtitle = messages[6];
+                        const meetupLocationUrl = messages[7];
+                        const eventPage = messages[8];
+
+                        const elements = [
+                            {
+                                title: meetupTitle,
+                                subtitle: meetupSubtitle,
+                                image_url:  'http://i.imgur.com/dORdxei.png', //'http://i.imgur.com/2v3uz4B.png',
+                                buttons: [
+                                    {
+                                        type: 'postback',
+                                        title: 'See the Agenda',
+                                        payload: 'MEETUP_AGENDA'
+                                    },
+                                    {
+                                        type: 'web_url',
+                                        title: 'Add to Calendar',
+                                        url: calendarUrl
+                                    },
+                                    {
+                                        type: 'web_url',
+                                        title: 'Go to Event Page',
+                                        url: eventPage
+                                    }
+                                ]
+                            },
+                            {
+                                title: locTitle,
+                                subtitle: locSubtitle,
+                                image_url: 'http://i.imgur.com/BHleHKN.png',
+                                buttons: [
+                                    {
+                                        type: 'web_url',
+                                        title: 'Show on map',
+                                        url: meetupLocationUrl
+                                    },
+                                    {
+                                        type: 'web_url',
+                                        title: 'Go to Facebook Page',
+                                        url: 'https://www.facebook.com/alapcafe'
+                                    }
+                                ]
+                            }
+                        ];
+
+                        if(todaysMeetup) {
+                            elements.unshift({
+                                title: todayTitle,
+                                subtitle: todaySubtitle,
+                                image_url: 'http://i.imgur.com/gk4Cf0D.png',
+                                buttons: [
+                                    {
+                                        type: 'postback',
+                                        title: 'Submit Q&A question',
+                                        payload: 'MEETUP_QUESTION'
+                                    },
+                                    {
+                                        type: 'web_url',
+                                        title: 'Show venue on map',
+                                        url: meetupLocationUrl
+                                    },
+                                    {
+                                        type: 'web_url',
+                                        title: 'RSVP on Meetup.com',
+                                        url: eventPage
+                                    }
+                                ]
+                            });
+                        }
+
+                        // if user not subscribed than push subscription element
+                        //const user = messages[9];
+                        console.log(user);
+                        const isSubscribed = user.subscriptions.meetup;
+                        if(!isSubscribed) {
+                            elements.push({
+                                title: 'Subscribe for Meetup notifications',
+                                subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
+                                
+                                image_url: 'http://i.imgur.com/O0ZiM8v.png',
+                                buttons: [
+                                    {
+                                        type: 'postback',
+                                        title: 'Subscribe',
+                                        payload: 'MEETUP_SUBSCRIBED'
+                                    }
+                                ]
+                            });
+                        }
+
+                        chat.sendGenericTemplate(elements);
+                    });
+                }
+            });
         });
 }
 
@@ -711,7 +725,7 @@ function newsletterUnsubscribed(messagingEvent, chat, data) {
 function settingsFeature(messagingEvent, chat, data) {
     const newsletterSubscribed = {
         title: 'You are subscribed for the newsletter.',
-        subtitle: 'Weekly newsletter about chatbots.',
+        subtitle: `You'll get a newsletter once a week.`,
         image_url: 'http://i.imgur.com/Q4D0c9x.png',
         buttons: [
             {
@@ -724,7 +738,7 @@ function settingsFeature(messagingEvent, chat, data) {
 
     const meetupSubscribed = {
         title: 'You are subscribed to meetup notifications.',
-        subtitle: 'You get notified about upcoming meetups.',
+        subtitle: `You'll get notified about all upcoming meetups.`,
         image_url: 'http://i.imgur.com/O0ZiM8v.png',
         buttons: [
             {
@@ -750,7 +764,7 @@ function settingsFeature(messagingEvent, chat, data) {
 
     const meetupUnSubscribed = {
         title: 'Subscribe for Meetup notifications',
-        subtitle: `You get notified as soon as we publish a new meetup.`,
+        subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
         image_url: 'http://i.imgur.com/O0ZiM8v.png',
         buttons: [
             {

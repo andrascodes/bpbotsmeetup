@@ -44,9 +44,18 @@ module.exports = function getMeetupInfo(db) {
                 upsert: true
             }).then((res) => {
                 const now = new Date().getTime();
+                const nomeetup = new Date(2016, 8, 7).getTime();
                 // return latest meetup, not the one that we have just changed
                 return db.meetups.find({ "endtime": { $gt : now } }).sort({"time": -1}).limit(1).then((latestMeetup) => {
-                    return latestMeetup[0];
+                    if(latestMeetup.length <= 0) {
+                        const noMeetupObject = {
+                            error: 'no upcoming Meetups'
+                        };
+                        return noMeetupObject;
+                    }
+                    else {
+                        return latestMeetup[0];
+                    }
                 });
 
             }).catch((err) => { console.log(`Error updating Meetup data: ${err}`);});
