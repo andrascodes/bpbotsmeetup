@@ -28,6 +28,11 @@ const config = {
             // Bots
             name: "András Szücs",
             userID: '1345023502204683'
+        },
+        {
+            // Bots
+            name: "Mátyás Szaszkó",
+            userID: '1210001542396710'
         }
     ],
     gift: false
