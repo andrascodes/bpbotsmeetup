@@ -389,34 +389,49 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
 function meetupAgendaFeature(messagingEvent, chat, data) {
     getMeetupInfo(db)
         .then((nextMeetup) => {
-            if(nextMeetup.error) {
-                chat.say('There are no upcoming Meetups scheduled right now.').then(() => {
-                    chat.say({
-                        text: `Subscribe for notifications so you don't miss out on the announcement. `,
-                        buttons: [
-                            { type: 'postback', title: 'Subscribe', payload: 'MEETUP_SUBSCRIBED' },
-                        ]
-                    }, { typing: true });
-                });
-            }
-            else {
-                const start = `Here's the agenda for ${nextMeetup.name}:`;
-
-                chat.say(start).then(() => {
-                    const agenda = nextMeetup.agenda.reduce((prev, curr) => {
-                        return prev + '\n' + curr;
-                    }, '');
-
-                    chat.say(agenda, { typing: true }).then(() => {
-                        chat.say({
-                            text: `You can RSVP on Meetup.com.`,
-                            buttons: [
-                                { type: 'web_url', title: 'RSVP on Meetup.com', url: `${nextMeetup.link}` },
-                            ]
-                        }, { typing: true });
+             db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
+                if(nextMeetup.error) {
+                    chat.say('There are no upcoming Meetups scheduled right now.').then(() => {
+                        if(!user.subscriptions.meetup) {
+                            chat.sendGenericTemplate([{
+                                title: 'Subscribe for Meetup notifications',
+                                subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
+                                
+                                image_url: 'http://i.imgur.com/O0ZiM8v.png',
+                                buttons: [
+                                    {
+                                        type: 'postback',
+                                        title: 'Subscribe',
+                                        payload: 'MEETUP_SUBSCRIBED'
+                                    }
+                                ]
+                            }], { typing: true });
+                        }
+                        else {
+                            chat.say(`You're subscribed for meetup notifications.\n` + 
+                                        `I'll notify you when there is a new meetup. ;)`, { typing: true });
+                        } 
                     });
-                });
-            }
+                }
+                else {
+                    const start = `Here's the agenda for ${nextMeetup.name}:`;
+
+                    chat.say(start).then(() => {
+                        const agenda = nextMeetup.agenda.reduce((prev, curr) => {
+                            return prev + '\n' + curr;
+                        }, '');
+
+                        chat.say(agenda, { typing: true }).then(() => {
+                            chat.say({
+                                text: `You can RSVP on Meetup.com.`,
+                                buttons: [
+                                    { type: 'web_url', title: 'RSVP on Meetup.com', url: `${nextMeetup.link}` },
+                                ]
+                            }, { typing: true });
+                        });
+                    });
+                }
+             });
         });
 }
 
