@@ -296,11 +296,9 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
 
                     convo.say(start).then(() => {
                         // TODO: don't filter, just read the questions objects
-                        const talks = nextMeetup.agenda
-                            .filter((agendaItem) => {
-                                return agendaItem.includes('Presentation') || agendaItem.includes('demo');
-                            })
-                            .map((agendaItem) => {
+
+                        const presentations = nextMeetup.agenda.slice(1,-1);
+                        const talks = presentations.map((agendaItem) => {
                                 return agendaItem.split(' - ')[1];
                             });
                         
