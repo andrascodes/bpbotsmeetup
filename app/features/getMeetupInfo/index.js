@@ -33,12 +33,12 @@ module.exports = function getMeetupInfo(db) {
                 // TODO: Pick out the ones that have Talk in them. includes('Talk');
                 talks.push({ "title": myArray[1], "questions": [] });
             }
+            result.talks = talks;
             
             return db.meetups.findAndModify({
                 query: { "_id": result.id },
                 update: { 
-                    $set: result,
-                    $setOnInsert: { talks: talks }
+                    $set: result
                 },
                 new: false,
                 upsert: true
