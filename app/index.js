@@ -63,8 +63,6 @@ const notifyAdmins = require('./features/notifyAdmins');
     // this is where the templateString will be switched out
 
 function greetingFeature(messagingEvent, chat, data) {
-    console.log(messagingEvent);
-    console.log('I got hi.');
     db.users.findOne({ "_id": messagingEvent.sender.id }).then((user) => {
         const first_name = user['first_name'];
         const firsttimer = !(user.onboarding['postback:GET_STARTED']);
@@ -114,7 +112,11 @@ function greetingFeature(messagingEvent, chat, data) {
             
         }
         else {
-            chat.say(simpleGreeting);
+            chat.say(simpleGreeting).then((res) => {
+                console.log(`Greeting res: ${res}`);
+            }).catch((err) => {
+                console.log(`Greeting err: ${err}`);
+            });
         }
     }).catch((err) => { console.log(`Error getting User data: ${err}`);});
 }
