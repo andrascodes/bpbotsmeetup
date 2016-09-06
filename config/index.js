@@ -35,7 +35,7 @@ const config = {
             userID: '1210001542396710'
         }
     ],
-    gift: false
+    gift: true
 }
 
 if(process.env.DEVELOPMENT) {

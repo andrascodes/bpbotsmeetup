@@ -135,9 +135,6 @@ class BootBot extends EventEmitter {
   }
 
   sendRequest(body, endpoint, method) {
-    console.log(`SendRequest body: ${ JSON.stringify(body, null ,2) }`);
-    console.log(`SendRequest endpoint: ${ JSON.stringify(endpoint, null ,2) }`);
-    console.log(`SendRequest method: ${ JSON.stringify(method, null ,2) }`);
     endpoint = endpoint || 'messages';
     method = method || 'POST';
     return fetch(`https://graph.facebook.com/v2.6/me/${endpoint}?access_token=${this.accessToken}`, {
@@ -147,7 +144,7 @@ class BootBot extends EventEmitter {
       },
       body: JSON.stringify(body)
     })
-    .then(res => console.log(`Request result: ${ JSON.stringify(res, null ,2) }`))
+    .then(res => console.log(`Request result: ${ JSON.stringify(res.json(), null ,2) }`))
     .catch(err => console.log(`Error sending message: ${err}`));
   }
 

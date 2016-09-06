@@ -112,11 +112,7 @@ function greetingFeature(messagingEvent, chat, data) {
             
         }
         else {
-            chat.say(simpleGreeting).then((res) => {
-                console.log(`Greeting res: ${res}`);
-            }).catch((err) => {
-                console.log(`Greeting err: ${err}`);
-            });
+            chat.say(simpleGreeting);
         }
     }).catch((err) => { console.log(`Error getting User data: ${err}`);});
 }
