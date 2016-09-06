@@ -12,8 +12,9 @@ module.exports = function notifyAdmins(bot, type, message, user) {
     if(type === 'feedback') {       
         admins.forEach((admin) => {
             bot.sendAttachment(admin.userID, 'image', user.profile_pic).then(() => {
-                bot.say(admin.userID, `${user.first_name} ${user.last_name} sent a new feedback:`, options).then(() => {
-                    bot.say(admin.userID, `"${message}"`, options);
+                bot.say(admin.userID, `${user.first_name} ${user.last_name} sent a new feedback:`/*, options*/).then(() => {
+                    //bot.say(admin.userID, `"${message}"`, options);
+                    bot.say(admin.userID, `"${message}"`);
                 });
             });
         });

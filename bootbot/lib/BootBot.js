@@ -135,6 +135,9 @@ class BootBot extends EventEmitter {
   }
 
   sendRequest(body, endpoint, method) {
+    console.log(`SendRequest body: ${ JSON.stringify(body, null ,2) }`);
+    console.log(`SendRequest body: ${ JSON.stringify(endpoint, null ,2) }`);
+    console.log(`SendRequest body: ${ JSON.stringify(method, null ,2) }`)
     endpoint = endpoint || 'messages';
     method = method || 'POST';
     return fetch(`https://graph.facebook.com/v2.6/me/${endpoint}?access_token=${this.accessToken}`, {
@@ -461,18 +464,6 @@ class BootBot extends EventEmitter {
   
 
   _saveUserToDB(userId) {
-    this.sendRequest({
-      recipient: {
-          id: 866024750165964
-        },
-        message: { 
-          text: 'Message request' 
-        },
-    }).then((json) => {
-        console.log(json);
-      }).catch((err) => { console.log(err); });
-
-
     return this.getUserProfile(userId).then((user) => {
       console.log(user);
       const admins = this.admins;
