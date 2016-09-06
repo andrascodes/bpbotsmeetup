@@ -33,7 +33,14 @@ module.exports = function getMeetupInfo(db) {
                 // TODO: Pick out the ones that have Talk in them. includes('Talk');
                 talks.push({ "title": myArray[1], "questions": [] });
             }
-            result.talks = talks;
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+            const meetupTime = new Date(result.time);
+            const meetupDay = new Date(meetupTime.getFullYear(), meetupTime.getMonth(), meetupTime.getDate()).getTime();
+            if(meetupDay !== today) {
+                result.talks = talks;
+            }
             
             return db.meetups.findAndModify({
                 query: { "_id": result.id },
@@ -44,7 +51,7 @@ module.exports = function getMeetupInfo(db) {
                 upsert: true
             }).then((res) => {
                 const now = new Date().getTime();
-                const nomeetup = new Date(2016, 8, 7).getTime();
+                //const nomeetup = new Date(2016, 8, 7).getTime();
                 // return latest meetup, not the one that we have just changed
                 return db.meetups.find({ "endtime": { $gt : now } }).sort({"time": -1}).limit(1).then((latestMeetup) => {
                     if(latestMeetup.length <= 0) {

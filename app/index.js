@@ -892,7 +892,7 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
     if(!data.captured) {
 
         function sendLatestMeetupQuestions() {
-            const now = new Date();
+                const now = new Date();
                 let today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000).getTime();
                 
