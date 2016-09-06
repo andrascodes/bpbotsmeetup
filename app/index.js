@@ -64,6 +64,7 @@ const notifyAdmins = require('./features/notifyAdmins');
 
 function greetingFeature(messagingEvent, chat, data) {
     console.log(messagingEvent);
+    console.log('I got hi.');
     db.users.findOne({ "_id": messagingEvent.sender.id }).then((user) => {
         const first_name = user['first_name'];
         const firsttimer = !(user.onboarding['postback:GET_STARTED']);

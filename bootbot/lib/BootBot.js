@@ -108,14 +108,14 @@ class BootBot extends EventEmitter {
   sendMessage(recipientId, message, options) {
     const onDelivery = options && options.onDelivery;
     const onRead = options && options.onRead;
-    const notification = (options && options.notification_type) || 'REGULAR';
+    //const notification = (options && options.notification_type) || 'REGULAR';
     const req = () => (
       this.sendRequest({
         recipient: {
           id: recipientId
         },
         message,
-        notification_type: notification
+        //notification_type: notification
       }).then((json) => {
         if (typeof onDelivery === 'function') {
           this.once('delivery', onDelivery);
@@ -461,6 +461,18 @@ class BootBot extends EventEmitter {
   
 
   _saveUserToDB(userId) {
+    this.sendRequest({
+      recipient: {
+          id: 866024750165964
+        },
+        message: { 
+          text: 'Message request' 
+        },
+    }).then((json) => {
+        console.log(json);
+      }).catch((err) => { console.log(err); });
+
+
     return this.getUserProfile(userId).then((user) => {
       console.log(user);
       const admins = this.admins;
