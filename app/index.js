@@ -905,6 +905,9 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                         return chat.say('There are no meetups scheduled today, boss. :)');
                     }
                     const talks = todaysMeetup[0].talks;
+                    if(talks.length <= 0) {
+                        return chat.say(`Something's wrong. Ask the developer.`);
+                    }
                     const questionTalks = talks.filter((talk) => {
                         return talk.questions.length > 0;
                     });

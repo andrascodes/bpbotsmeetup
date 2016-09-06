@@ -41,6 +41,9 @@ module.exports = function getMeetupInfo(db) {
             if(meetupDay !== today) {
                 result.talks = talks;
             }
+            else {
+                result.talks = [];
+            }
             
             return db.meetups.findAndModify({
                 query: { "_id": result.id },
