@@ -144,7 +144,7 @@ class BootBot extends EventEmitter {
       },
       body: JSON.stringify(body)
     })
-    .then(res => console.log(`Request result: ${res.json()}`))
+    .then(res => console.log(`Request result: ${ JSON.stringify(res.json(), null ,2) }`))
     .catch(err => console.log(`Error sending message: ${err}`));
   }
 
