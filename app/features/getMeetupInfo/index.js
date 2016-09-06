@@ -11,6 +11,7 @@ module.exports = function getMeetupInfo(db) {
     const meetupApiResponse = requestp(options);
 
     return meetupApiResponse.then((result) => {
+        console.log(`Result: ${JSON.stringify(result, null, 2)}`);
         if(result.length) {
             //console.log(result);
             result = result[0];
@@ -38,6 +39,7 @@ module.exports = function getMeetupInfo(db) {
             const today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
             const meetupTime = new Date(result.time);
             const meetupDay = new Date(meetupTime.getFullYear(), meetupTime.getMonth(), meetupTime.getDate()).getTime();
+            console.log(meetup)
             if(meetupDay !== today) {
                 result.talks = talks;
             }

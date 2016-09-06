@@ -63,6 +63,7 @@ const notifyAdmins = require('./features/notifyAdmins');
     // this is where the templateString will be switched out
 
 function greetingFeature(messagingEvent, chat, data) {
+    console.log(messagingEvent);
     db.users.findOne({ "_id": messagingEvent.sender.id }).then((user) => {
         const first_name = user['first_name'];
         const firsttimer = !(user.onboarding['postback:GET_STARTED']);
@@ -118,6 +119,7 @@ function greetingFeature(messagingEvent, chat, data) {
 }
 
 function meetupFeature(messagingEvent, chat, data) {
+    console.log(messagingEvent);
     getMeetupInfo(db)
         .then((nextMeetup) => {
             db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
