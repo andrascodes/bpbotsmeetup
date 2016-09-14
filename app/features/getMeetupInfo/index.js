@@ -13,8 +13,12 @@ module.exports = function getMeetupInfo(db) {
     return meetupApiResponse.then((result) => {
         console.log(`Result: ${JSON.stringify(result, null, 2)}`);
         if(result.length) {
-            //console.log(result);
+
             result = result[0];
+
+            if(result.name === 'Chatbot Wednesdays') {
+                return result;
+            }
 
             // set location = string for Google Maps Search
             // agenda = parse description get agenda part and Split it into elements of an array
@@ -47,6 +51,7 @@ module.exports = function getMeetupInfo(db) {
                 result.talks = [];
             }
             
+            // Saving the Meetup to DB
             return db.meetups.findAndModify({
                 query: { "_id": result.id },
                 update: { 
@@ -57,7 +62,7 @@ module.exports = function getMeetupInfo(db) {
             }).then((res) => {
                 const now = new Date().getTime();
                 //const nomeetup = new Date(2016, 8, 7).getTime();
-                // return latest meetup, not the one that we have just changed
+                // return latest meetup, not necessarily the one that we have just changed
                 return db.meetups.find({ "endtime": { $gt : now } }).sort({"time": -1}).limit(1).then((latestMeetup) => {
                     if(latestMeetup.length <= 0) {
                         const noMeetupObject = {
