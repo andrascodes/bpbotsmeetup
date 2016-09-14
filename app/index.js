@@ -148,7 +148,7 @@ function meetupFeature(messagingEvent, chat, data) {
                 }
                 else if(nextMeetup.name === 'Chatbot Wednesdays') {
 
-                        chat.say('There are no upcoming Meetups scheduled right now.').then(() => {
+                        chat.say('There are no upcoming Meetups scheduled right now.\n').then(() => {
                             if(!user.subscriptions.meetup) {
                                 const generic = [
                                     {
@@ -166,48 +166,51 @@ function meetupFeature(messagingEvent, chat, data) {
                                     },
                                     {
                                         title: 'Chatbot Wednesdays',
-                                        subtitle: `${result.venue.name} at ${moment(result.time).format('HH[:]mm')}`,
+                                        subtitle: `${nextMeetup.venue.name} at ${moment(nextMeetup.time).format('HH[:]mm')}`,
                                         
                                         image_url: 'http://i.imgur.com/9KNpPD3.png',
                                         buttons: [
                                             {
                                                 type: 'web_url',
                                                 title: 'Show venue on map',
-                                                url: `http://maps.google.com/?q=${result.venue.name}, ${result.venue.address_1}, ${result.venue.city}`
+                                                url: `http://maps.google.com/?q=${nextMeetup.venue.name}, ${nextMeetup.venue.address_1}, ${nextMeetup.venue.city}`
                                             },
                                             {
                                                 type: 'web_url',
                                                 title: 'RSVP on Meetup.com',
-                                                url: result.link
+                                                url: nextMeetup.link
                                             }
                                         ]
                                     }
                                 ]
 
-                                chat.sendGenericTemplate(generic, { typing: true });
+                                chat.say('But you can always come to our weekly discussions. ;)', { typing: true }).then(() => {
+                                    chat.sendGenericTemplate(generic, { typing: true });
+                                });
+                                
                             }
                             else {
                                 chat.say(`You're subscribed for meetup notifications.\n` + 
                                             `I'll notify you when there is a new meetup. ;)`, { typing: true })
                                 .then( () => {
-                                    chat.say(`Until then. You can always come to our weekly discussions. ;)`, { typing: true })
+                                    chat.say(`Until then. You can always come to our weekly discussions. :)`, { typing: true })
                                     .then( () => {
                                         const generic = [
                                             {
                                                 title: 'Chatbot Wednesdays',
-                                                subtitle: `${result.venue.name} at ${moment(result.time).format('HH[:]mm')}`,
+                                                subtitle: `${nextMeetup.venue.name} at ${moment(nextMeetup.time).format('HH[:]mm')}`,
                                                 
                                                 image_url: 'http://i.imgur.com/9KNpPD3.png',
                                                 buttons: [
                                                     {
                                                         type: 'web_url',
                                                         title: 'Show venue on map',
-                                                        url: `http://maps.google.com/?q=${result.venue.name}, ${result.venue.address_1}, ${result.venue.city}`
+                                                        url: `http://maps.google.com/?q=${nextMeetup.venue.name}, ${nextMeetup.venue.address_1}, ${nextMeetup.venue.city}`
                                                     },
                                                     {
                                                         type: 'web_url',
                                                         title: 'RSVP on Meetup.com',
-                                                        url: result.link
+                                                        url: nextMeetup.link
                                                     }
                                                 ]
                                             }
