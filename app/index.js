@@ -55,7 +55,7 @@ const notifyAdmins = require('./features/notifyAdmins');
     // it will be sort of like a patternMatcher, NLP
         // if {{(...)}} === first_name => getUserProfile and name
 // get message from DB
-// see the type and meta info for Developer 
+// see the type and meta info for Developer
 // (if something needs to be done before sending do it)
     // this is where the messageObjectTemplate will be formulated
     // if a card needs to be shown dynamically that is done here
@@ -111,7 +111,7 @@ function greetingFeature(messagingEvent, chat, data) {
                 })
                 .then().catch((err) => { console.log(`Error updating User data: ${err}`);});
             });
-            
+
         }
         else {
             chat.say(simpleGreeting);
@@ -120,19 +120,29 @@ function greetingFeature(messagingEvent, chat, data) {
 }
 
 function meetupFeature(messagingEvent, chat, data) {
-    chat.sendGenericTemplate([{
-        title: 'Budapest Bots Meetup 1.2',
-        subtitle: `Nov 9th, 19:00-21:00`,
-        
-        image_url: 'http://i.imgur.com/dORdxei.png',
+    chat.say({
+        text: `There are no upcoming Meetups scheduled right now.`,
         buttons: [
             {
-                type: 'web_url',
-                title: 'RSVP on Meetup.com',
-                url: 'https://www.meetup.com/Budapest-Bots-Meetup/events/234476176/'
+              type: 'url', 
+              title: 'RSVP on Meetup.com',
+              url: 'https://www.meetup.com/Budapest-Bots-Meetup/events/234476176/'
             }
         ]
-    }]);
+    });
+    // chat.sendGenericTemplate([{
+    //     title: 'Budapest Bots Meetup 1.2',
+    //     subtitle: `Nov 9th, 19:00-21:00`,
+    //
+    //     image_url: 'http://i.imgur.com/dORdxei.png',
+    //     buttons: [
+    //         {
+    //             type: 'web_url',
+    //             title: 'RSVP on Meetup.com',
+    //             url: 'https://www.meetup.com/Budapest-Bots-Meetup/events/234476176/'
+    //         }
+    //     ]
+    // }]);
     // getMeetupInfo(db)
     //     .then((nextMeetup) => {
     //         db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
@@ -142,7 +152,7 @@ function meetupFeature(messagingEvent, chat, data) {
     //                         chat.sendGenericTemplate([{
     //                             title: 'Subscribe for Meetup notifications',
     //                             subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
-                                
+
     //                             image_url: 'http://i.imgur.com/O0ZiM8v.png',
     //                             buttons: [
     //                                 {
@@ -154,9 +164,9 @@ function meetupFeature(messagingEvent, chat, data) {
     //                         }], { typing: true });
     //                     }
     //                     else {
-    //                         chat.say(`You're subscribed for meetup notifications.\n` + 
+    //                         chat.say(`You're subscribed for meetup notifications.\n` +
     //                                     `I'll notify you when there is a new meetup. ;)`, { typing: true });
-    //                     } 
+    //                     }
     //                 });
     //             }
     //             else if(nextMeetup.name === 'Chatbot Wednesdays') {
@@ -167,7 +177,7 @@ function meetupFeature(messagingEvent, chat, data) {
     //                                 {
     //                                     title: 'Subscribe for Meetup notifications',
     //                                     subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
-                                        
+
     //                                     image_url: 'http://i.imgur.com/O0ZiM8v.png',
     //                                     buttons: [
     //                                         {
@@ -180,7 +190,7 @@ function meetupFeature(messagingEvent, chat, data) {
     //                                 {
     //                                     title: 'Chatbot Wednesdays',
     //                                     subtitle: `${nextMeetup.venue.name} at ${moment(nextMeetup.time).format('HH[:]mm')}`,
-                                        
+
     //                                     image_url: 'http://i.imgur.com/9KNpPD3.png',
     //                                     buttons: [
     //                                         {
@@ -200,10 +210,10 @@ function meetupFeature(messagingEvent, chat, data) {
     //                             chat.say('But you can always come to our weekly discussions. ;)', { typing: true }).then(() => {
     //                                 chat.sendGenericTemplate(generic, { typing: true });
     //                             });
-                                
+
     //                         }
     //                         else {
-    //                             chat.say(`You're subscribed for meetup notifications.\n` + 
+    //                             chat.say(`You're subscribed for meetup notifications.\n` +
     //                                         `I'll notify you when there is a new meetup. ;)`, { typing: true })
     //                             .then( () => {
     //                                 chat.say(`Until then. You can always come to our weekly discussions. :)`, { typing: true })
@@ -212,7 +222,7 @@ function meetupFeature(messagingEvent, chat, data) {
     //                                         {
     //                                             title: 'Chatbot Wednesdays',
     //                                             subtitle: `${nextMeetup.venue.name} at ${moment(nextMeetup.time).format('HH[:]mm')}`,
-                                                
+
     //                                             image_url: 'http://i.imgur.com/9KNpPD3.png',
     //                                             buttons: [
     //                                                 {
@@ -228,11 +238,11 @@ function meetupFeature(messagingEvent, chat, data) {
     //                                             ]
     //                                         }
     //                                     ];
-                                        
+
     //                                     chat.sendGenericTemplate(generic, { typing: true });
     //                                 });
     //                             });
-    //                         } 
+    //                         }
     //                     });
     //             }
     //             else {
@@ -249,7 +259,7 @@ function meetupFeature(messagingEvent, chat, data) {
 
     //                 const incompleteMessages = [];
     //                 incompleteMessages.push(getCompletedMessage(`{{meetup.title}}`, chat));
-    //                 incompleteMessages.push(getCompletedMessage(`{{meetup.month.long}} {{meetup.day.num}}, ` + 
+    //                 incompleteMessages.push(getCompletedMessage(`{{meetup.month.long}} {{meetup.day.num}}, ` +
     //                     `{{meetup.start}}-{{meetup.end}} at {{meetup.locationName}}`, chat));
     //                 incompleteMessages.push(getCompletedMessage('{{meetup.calendarUrl}}', chat));
     //                 incompleteMessages.push(getCompletedMessage(`Venue: {{meetup.locationName}}`, chat));
@@ -259,8 +269,8 @@ function meetupFeature(messagingEvent, chat, data) {
     //                     `Also make sure you RSVP!`, chat));
     //                 incompleteMessages.push(getCompletedMessage('{{meetup.locationUrl}}', chat));
     //                 incompleteMessages.push(getCompletedMessage('{{meetup.url}}', chat));
-    
-    //                 Promise.all(incompleteMessages).then((messages) => {   
+
+    //                 Promise.all(incompleteMessages).then((messages) => {
     //                     console.log(`Promises: ${JSON.stringify(messages, null, 2)}`);
     //                     const meetupTitle = messages[0];
     //                     const meetupSubtitle = messages[1];
@@ -347,7 +357,7 @@ function meetupFeature(messagingEvent, chat, data) {
     //                         elements.push({
     //                             title: 'Subscribe for Meetup notifications',
     //                             subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
-                                
+
     //                             image_url: 'http://i.imgur.com/O0ZiM8v.png',
     //                             buttons: [
     //                                 {
@@ -392,7 +402,7 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
                         const talks = presentations.map((agendaItem) => {
                                 return agendaItem.split(' - ')[1];
                             });
-                        
+
                         let agenda = [];
                         for(let i=1; i<=talks.length; ++i) {
                             agenda.push(`${i}. ${talks[i-1]}`);
@@ -445,13 +455,13 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
                             const text = payload.message.text;
                             talkName = talkName.slice(3,-3);
                             const talkIndex = nextMeetup.talks.findIndex((talk) => {
-                               return talk.title.includes(talkName); 
+                               return talk.title.includes(talkName);
                             });
 
                             nextMeetup.talks[talkIndex].questions.push(
-                                { 
-                                    "userID": payload.sender.id, 
-                                    "question": text 
+                                {
+                                    "userID": payload.sender.id,
+                                    "question": text
                                 }
                             );
 
@@ -463,7 +473,7 @@ function meetupQuestionFeature(messagingEvent, chat, data) {
                             .then((res) => {
                                 // console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
                                 convo.say(`Got it. Thanks.`).then(() => convo.end());
-                            });                            
+                            });
                         }
                     });
                 };
@@ -485,7 +495,7 @@ function meetupAgendaFeature(messagingEvent, chat, data) {
                             chat.sendGenericTemplate([{
                                 title: 'Subscribe for Meetup notifications',
                                 subtitle: `Get notified as soon as we publish a new meetup. (once or twice a month)`,
-                                
+
                                 image_url: 'http://i.imgur.com/O0ZiM8v.png',
                                 buttons: [
                                     {
@@ -497,9 +507,9 @@ function meetupAgendaFeature(messagingEvent, chat, data) {
                             }], { typing: true });
                         }
                         else {
-                            chat.say(`You're subscribed for meetup notifications.\n` + 
+                            chat.say(`You're subscribed for meetup notifications.\n` +
                                         `I'll notify you when there is a new meetup. ;)`, { typing: true });
-                        } 
+                        }
                     });
                 }
                 else {
@@ -541,7 +551,7 @@ function meetupSubscribed(messagingEvent, chat, data) {
             messages.push({
                 message: `You can manage your subscriptions later in the Settings menu.`,
                 options: options
-            });  
+            });
 
             messages.push({
                 message: `You can type 'settings' or use the Menu below to get to the Settings menu.`,
@@ -553,7 +563,7 @@ function meetupSubscribed(messagingEvent, chat, data) {
 
        db.users.findAndModify({
             query: { '_id': user._id },
-            update: { 
+            update: {
                 $set: user
             },
             new: true,
@@ -564,14 +574,14 @@ function meetupSubscribed(messagingEvent, chat, data) {
 
                 chat.sayMultiple(messages);
 
-            }).catch((err) => { console.log(`Error updating User data: ${err}`);});     
+            }).catch((err) => { console.log(`Error updating User data: ${err}`);});
     }).catch((err) => { console.log(`Error getting User data: ${err}`);});
 }
 
 function meetupUnsubscribed(messagingEvent, chat, data) {
     db.users.findAndModify({
         query: { '_id': messagingEvent.sender.id },
-        update: { 
+        update: {
             $set: { 'subscriptions.meetup': false }
         },
         new: false,
@@ -592,7 +602,7 @@ function feedbackFeature(messagingEvent, chat, data) {
 
     const askType = (convo) => {
         convo.ask({
-            text: 'I can pass on a message to my creators.\n' + 
+            text: 'I can pass on a message to my creators.\n' +
                     'What would you like to send them?',
             quickReplies: [`Ask a question`, `Make a complaint`, `Send a message`, `Never mind.`]
         }, (payload, convo, data) => {
@@ -654,7 +664,7 @@ function newsletterFeature(messagingEvent, chat, data) {
     const subscribe = {
         title: 'Subscribe for our Messenger Newsletter',
         subtitle: 'Weekly newsletter about chatbots.',
-        
+
         image_url: 'http://i.imgur.com/Q4D0c9x.png', //'http://static1.squarespace.com/static/565373abe4b01a919ada14a7/t/56543a93e4b0ae5fc67ba90b/1456740220665/',
         buttons: [
             {
@@ -691,7 +701,7 @@ function newsletterFeature(messagingEvent, chat, data) {
             ]
         }
     ]
-    
+
     db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
         if(!user.subscriptions.newsletter) {
             elements.unshift(subscribe);
@@ -794,7 +804,7 @@ function newsletterSubscribed(messagingEvent, chat, data) {
 
        db.users.findAndModify({
             query: { '_id': user._id },
-            update: { 
+            update: {
                 $set: user
             },
             new: true,
@@ -805,14 +815,14 @@ function newsletterSubscribed(messagingEvent, chat, data) {
 
                 chat.sayMultiple(messages);
 
-            }).catch((err) => { console.log(`Error updating User data: ${err}`);});     
+            }).catch((err) => { console.log(`Error updating User data: ${err}`);});
     }).catch((err) => { console.log(`Error getting User data: ${err}`);});
 }
 
 function newsletterUnsubscribed(messagingEvent, chat, data) {
     db.users.findAndModify({
         query: { '_id': messagingEvent.sender.id },
-        update: { 
+        update: {
             $set: { 'subscriptions.newsletter': false}
         },
         new: false,
@@ -821,7 +831,7 @@ function newsletterUnsubscribed(messagingEvent, chat, data) {
         .then((res) => {
             console.log(`Response:\n${JSON.stringify(res, null, 2)}`);
             chat.say('Sorry to see you go. :( Unsubscribed from newsletter.').then(() => {
-                
+
             });
         }).catch((err) => { console.log(`Error updating User data: ${err}`);});
 }
@@ -877,7 +887,7 @@ function settingsFeature(messagingEvent, chat, data) {
                 payload: 'MEETUP_SUBSCRIBED'
             }
         ]
-    };    
+    };
 
     db.users.findOne({ '_id': messagingEvent.sender.id }).then((user) => {
         const elements = [];
@@ -986,11 +996,11 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                 const now = new Date();
                 let today = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
                 let tomorrow = new Date(today + 24 * 60 * 60 * 1000).getTime();
-                
+
                 // MeetupDay for testing - Comment out in production
                 // today = new Date(2016, 8, 6).getTime();
                 // tomorrow = new Date(2016, 8, 7).getTime();
-                
+
                 db.meetups.find({ "endtime": { $gte : today, $lte : tomorrow } }).sort({"time": -1}).limit(1).then((todaysMeetup) => {
                     if(todaysMeetup.length <= 0) {
                         return chat.say('There are no meetups scheduled today, boss. :)');
@@ -1007,7 +1017,7 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                         const talkTitles = questionTalks.map((talk) => {
                             return talk.title.slice(14, 14+16) + '...';
                         });
-                        
+
                         const quickReplyArray = Array.from(talkTitles);
                         quickReplyArray.push('Never mind');
 
@@ -1049,7 +1059,7 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                                             convo.sayMultiple(questions).then(() => {
                                                 convo.end();
                                             });
-                                        });     
+                                        });
                                     });
                                 }
                             });
@@ -1149,7 +1159,7 @@ bot.hear(/(.*)/, (messagingEvent, chat, data) => {
                         const commenceRetargeting = bot.targetUser(userId);
                         if(commenceRetargeting) {
                             chat.say({
-                                text: `I am here to assist you with meetup and chatbot related stuff.\n` + 
+                                text: `I am here to assist you with meetup and chatbot related stuff.\n` +
                                 `I suppose we could talk about these topics:`,
                                 buttons: [
                                     { type: 'postback', title: 'See next meetup', payload: 'MEETUP' },
