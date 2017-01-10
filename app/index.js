@@ -124,7 +124,7 @@ function meetupFeature(messagingEvent, chat, data) {
         text: `There are no upcoming Meetups scheduled right now.`,
         buttons: [
             {
-              type: 'url', 
+              type: 'web_url', 
               title: 'RSVP on Meetup.com',
               url: 'https://www.meetup.com/Budapest-Bots-Meetup/events/234476176/'
             }
